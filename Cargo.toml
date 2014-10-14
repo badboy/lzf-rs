@@ -1,0 +1,10 @@
+[package]
+
+name = "lzf-rs"
+version = "0.1.0"
+authors = ["Jan-Erik Rediger <badboy@fnordig.de>"]
+build = "make -C lzf"
+
+[lib]
+name = "lzf"
+path = "src/lzf/lib.rs"
