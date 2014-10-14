@@ -43,6 +43,11 @@ Run benchmarks with:
 cargo bench
 ```
 
+## Contribute
+
+If you find bugs or want to help otherwise, please [open an issue](https://github.com/badboy/lzf-rs/issues).  
+This is my first released library in Rust and I'm still learning. So if there are better ways to do things in Rust, I'm happy to hear about it.
+
 ## License
 
 BSD. See [LICENSE](LICENSE).  
