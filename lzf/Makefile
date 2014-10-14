@@ -1,6 +1,7 @@
+OUT_DIR ?= .
 CC=gcc
 SRC=lzf_c.c lzf_d.c
-OBJ=lzf_c.o lzf_d.o
+OBJ=$(SRC:%.c=$(OUT_DIR)/%.o)
 HEADERS=lzf.h lzfP.h
 LIB=liblzf.a
 
@@ -11,8 +12,10 @@ else
 	CFLAGS += -m64 -fPIC
 endif
 
-all: $(OBJ)
+all: $(LIB)
+
+$(LIB): $(OBJ)
 	$(AR) crus $(OUT_DIR)/$(LIB) $(OBJ)
 	
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $(OUT_DIR)/$@ $< 
+$(OUT_DIR)/%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
