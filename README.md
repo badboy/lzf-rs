@@ -1,6 +1,6 @@
 # LZF - a very small data compression library
 
-[LibLZF]() is a super small and fast compression library, originally written by Marc Lehmann.
+[LibLZF][] is a super small and fast compression library, originally written by Marc Lehmann.
 It's written in C and consists of only 4 files.
 
 Instead of rewriting the whole thing in Rust, I used Rust's [Foreign Function Interface][ffi] and wrote a wrapper.
