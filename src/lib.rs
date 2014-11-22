@@ -1,7 +1,27 @@
-use std;
+//! lzf-rs is a small wrapper around [LibLZF](http://software.schmorp.de/pkg/liblzf.html),
+//! a very small data compression library.
+//!
+//! The compression algorithm is very, very fast, yet still written in portable C.
+//!
+//! This Rust library is a wrapper around the library from Marc Lehmann.
+//!
+//! # Basic Operation
+//!
+//! ```rust,no_run
+//! # use lzf;
+//! let data = "foobar";
+//!
+//! let compressed = lzf::compress(data.as_bytes()).unwrap();
+//!
+//! let decompressed = lzf::decompress(compressed.as_slice(), data.len()).unwrap();
+//! ```
+
+#![experimental]
+
+extern crate libc;
+
 use libc::{c_uint,c_void};
 
-#[link(name = "lzf", kind = "static")]
 extern {
     fn lzf_compress(in_data: *const c_void, in_len: c_uint, out_data: *const c_void, out_len: c_uint) -> c_uint;
     fn lzf_decompress(in_data: *const c_void, in_len: c_uint, out_data: *const c_void, out_len: c_uint) -> c_uint;
@@ -12,7 +32,7 @@ pub enum LzfError {
     BufferTooSmall,
     DataCorrupted,
     NoCompressionPossible,
-    UnknownError(int)
+    UnknownError(uint)
 }
 pub type LzfResult<T> = Result<T, LzfError>;
 
@@ -37,7 +57,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
                                        out.as_ptr() as *const c_void, data_len as c_uint) };
 
     match result {
-        0 => Err(NoCompressionPossible),
+        0 => Err(LzfError::NoCompressionPossible),
         _ => {
             unsafe { out.set_len(result as uint) };
             Ok(out)
@@ -70,9 +90,9 @@ pub fn decompress(data: &[u8], out_len: uint) -> LzfResult<Vec<u8>> {
     match result {
         0 => {
             match std::os::errno() {
-                7  => Err(BufferTooSmall),
-                22 => Err(DataCorrupted),
-                e  => Err(UnknownError(e))
+                7  => Err(LzfError::BufferTooSmall),
+                22 => Err(LzfError::DataCorrupted),
+                e  => Err(LzfError::UnknownError(e))
             }
         },
         _ => {
@@ -85,8 +105,8 @@ pub fn decompress(data: &[u8], out_len: uint) -> LzfResult<Vec<u8>> {
 #[test]
 fn test_compress_skips_short() {
     match compress("foo".as_bytes()) {
-        Ok(_) => fail!("Compression did _something_, with is wrong for 'foo'"),
-        Err(err) => assert_eq!(NoCompressionPossible, err)
+        Ok(_) => panic!("Compression did _something_, with is wrong for 'foo'"),
+        Err(err) => assert_eq!(LzfError::NoCompressionPossible, err)
     }
 }
 
@@ -98,7 +118,7 @@ fn test_compress_lorem() {
         Ok(compressed) => {
             assert_eq!(272, compressed.len())
         }
-        Err(err) => fail!("Compression failed with error {}", err)
+        Err(err) => panic!("Compression failed with error {}", err)
     }
 }
 
@@ -108,7 +128,7 @@ fn test_compress_decompress_lorem_round() {
 
     let compressed = match compress(lorem.as_bytes()) {
         Ok(c) => c,
-        Err(err) => fail!("Compression failed with error {}", err)
+        Err(err) => panic!("Compression failed with error {}", err)
     };
 
     match decompress(compressed.as_slice(), lorem.len()) {
@@ -116,7 +136,7 @@ fn test_compress_decompress_lorem_round() {
             assert_eq!(lorem.len(), decompressed.len());
             assert_eq!(lorem.as_bytes(), decompressed.as_slice());
         },
-        Err(err) => fail!("Decompression failed with error {}", err)
+        Err(err) => panic!("Decompression failed with error {}", err)
     };
 }
 
@@ -126,12 +146,12 @@ fn test_decompress_fails_with_short_buffer() {
 
     let compressed = match compress(lorem.as_bytes()) {
         Ok(c) => c,
-        Err(err) => fail!("Compression failed with error {}", err)
+        Err(err) => panic!("Compression failed with error {}", err)
     };
 
     match decompress(compressed.as_slice(), 10) {
-        Ok(_) => fail!("Decompression worked. That should not happen"),
-        Err(err) => assert_eq!(BufferTooSmall, err)
+        Ok(_) => panic!("Decompression worked. That should not happen"),
+        Err(err) => assert_eq!(LzfError::BufferTooSmall, err)
     }
 }
 
@@ -140,7 +160,7 @@ fn test_decompress_fails_for_corrupted_data() {
     let lorem = "Lorem ipsum dolor sit amet";
 
     match decompress(lorem.as_bytes(), lorem.len()) {
-        Ok(_) => fail!("Decompression worked. That should not happen"),
-        Err(err) => assert_eq!(DataCorrupted, err)
+        Ok(_) => panic!("Decompression worked. That should not happen"),
+        Err(err) => assert_eq!(LzfError::DataCorrupted, err)
     }
 }

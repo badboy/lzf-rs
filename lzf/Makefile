@@ -1,5 +1,4 @@
 OUT_DIR ?= .
-CC=gcc
 SRC=lzf_c.c lzf_d.c
 OBJ=$(SRC:%.c=$(OUT_DIR)/%.o)
 HEADERS=lzf.h lzfP.h

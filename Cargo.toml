@@ -1,10 +1,10 @@
 [package]
-
-name = "lzf-rs"
+name = "lzf"
 version = "0.1.0"
 authors = ["Jan-Erik Rediger <badboy@fnordig.de>"]
-build = "make -C lzf"
-
-[lib]
-name = "lzf"
-path = "src/lzf/lib.rs"
+keywords = ["compression"]
+description = "A small wrapper around LibLZF, a very small data compression library"
+homepage = "https://github.com/badboy/lzf-rs"
+license = "BSD-3-Clause"
+readme = "README.md"
+build = "build.rs"
