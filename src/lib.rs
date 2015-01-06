@@ -27,7 +27,7 @@ extern {
     fn lzf_decompress(in_data: *const c_void, in_len: c_uint, out_data: *const c_void, out_len: c_uint) -> c_uint;
 }
 
-#[deriving(PartialEq, Eq, Clone, Show)]
+#[derive(PartialEq, Eq, Clone, Show, Copy)]
 pub enum LzfError {
     BufferTooSmall,
     DataCorrupted,
