@@ -1,6 +1,6 @@
 [package]
 name = "lzf"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Jan-Erik Rediger <badboy@fnordig.de>"]
 keywords = ["compression"]
 description = "A small wrapper around LibLZF, a very small data compression library"
