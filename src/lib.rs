@@ -32,7 +32,7 @@ pub enum LzfError {
     BufferTooSmall,
     DataCorrupted,
     NoCompressionPossible,
-    UnknownError(uint)
+    UnknownError(usize)
 }
 pub type LzfResult<T> = Result<T, LzfError>;
 
@@ -59,7 +59,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
     match result {
         0 => Err(LzfError::NoCompressionPossible),
         _ => {
-            unsafe { out.set_len(result as uint) };
+            unsafe { out.set_len(result as usize) };
             Ok(out)
         }
     }
@@ -82,7 +82,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 /// let data = "[your-compressed-data]";
 /// let decompressed = lzf::decompress(data.as_bytes(), 10);
 /// ```
-pub fn decompress(data: &[u8], out_len: uint) -> LzfResult<Vec<u8>> {
+pub fn decompress(data: &[u8], out_len: usize) -> LzfResult<Vec<u8>> {
     let mut out : Vec<u8> = Vec::with_capacity(out_len);
 
     let result = unsafe { lzf_decompress(data.as_ptr() as *const c_void, data.len() as c_uint,
@@ -96,7 +96,7 @@ pub fn decompress(data: &[u8], out_len: uint) -> LzfResult<Vec<u8>> {
             }
         },
         _ => {
-            unsafe { out.set_len(result as uint) };
+            unsafe { out.set_len(result as usize) };
             Ok(out)
         }
     }
