@@ -8,6 +8,7 @@
 //! # Basic Operation
 //!
 //! ```rust,no_run
+//! #![allow(unstable)]
 //! # use lzf;
 //! let data = "foobar";
 //!
