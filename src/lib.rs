@@ -118,7 +118,7 @@ fn test_compress_lorem() {
         Ok(compressed) => {
             assert_eq!(272, compressed.len())
         }
-        Err(err) => panic!("Compression failed with error {}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err)
     }
 }
 
@@ -128,7 +128,7 @@ fn test_compress_decompress_lorem_round() {
 
     let compressed = match compress(lorem.as_bytes()) {
         Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err)
     };
 
     match decompress(compressed.as_slice(), lorem.len()) {
@@ -136,7 +136,7 @@ fn test_compress_decompress_lorem_round() {
             assert_eq!(lorem.len(), decompressed.len());
             assert_eq!(lorem.as_bytes(), decompressed.as_slice());
         },
-        Err(err) => panic!("Decompression failed with error {}", err)
+        Err(err) => panic!("Decompression failed with error {:?}", err)
     };
 }
 
@@ -146,7 +146,7 @@ fn test_decompress_fails_with_short_buffer() {
 
     let compressed = match compress(lorem.as_bytes()) {
         Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err)
     };
 
     match decompress(compressed.as_slice(), 10) {
