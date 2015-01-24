@@ -22,6 +22,7 @@
 extern crate libc;
 
 use libc::{c_uint,c_void};
+use std::fmt;
 
 extern {
     fn lzf_compress(in_data: *const c_void, in_len: c_uint, out_data: *const c_void, out_len: c_uint) -> c_uint;
@@ -35,6 +36,26 @@ pub enum LzfError {
     NoCompressionPossible,
     UnknownError(usize)
 }
+
+impl fmt::Display for LzfError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            LzfError::BufferTooSmall => {
+                write!(f, "the given buffer is too small to handle the uncompressed data")
+            }
+            LzfError::DataCorrupted => {
+                write!(f, "the given data is corrupted")
+            }
+            LzfError::NoCompressionPossible => {
+                write!(f, "the input data cannot be compressed")
+            }
+            LzfError::UnknownError(err) => {
+                write!(f, "unknown error, code {}", err)
+            }
+        }
+    }
+}
+
 pub type LzfResult<T> = Result<T, LzfError>;
 
 /// Compress the given data, if possible.
