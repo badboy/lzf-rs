@@ -17,7 +17,8 @@
 //! let decompressed = lzf::decompress(compressed.as_slice(), data.len()).unwrap();
 //! ```
 
-#![experimental]
+#![feature(libc)]
+#![feature(os)]
 
 extern crate libc;
 
@@ -29,7 +30,7 @@ extern {
     fn lzf_decompress(in_data: *const c_void, in_len: c_uint, out_data: *const c_void, out_len: c_uint) -> c_uint;
 }
 
-#[derive(PartialEq, Eq, Clone, Show, Copy)]
+#[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum LzfError {
     BufferTooSmall,
     DataCorrupted,
