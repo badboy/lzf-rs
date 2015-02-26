@@ -35,7 +35,7 @@ pub enum LzfError {
     BufferTooSmall,
     DataCorrupted,
     NoCompressionPossible,
-    UnknownError(usize)
+    UnknownError(i32)
 }
 
 impl fmt::Display for LzfError {
