@@ -1,3 +1,7 @@
+### 0.2.3 - 03. April 2015
+
+* Fix tests to work on beta
+
 ### 0.2.2 - 03. April 2015
 
 * Make it work with Rust 1.0 Beta
