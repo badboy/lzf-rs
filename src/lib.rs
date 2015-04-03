@@ -18,12 +18,12 @@
 //! ```
 
 #![feature(libc)]
-#![feature(os)]
 
 extern crate libc;
 
 use libc::{c_uint,c_void};
 use std::fmt;
+use std::io::Error;
 
 extern {
     fn lzf_compress(in_data: *const c_void, in_len: c_uint, out_data: *const c_void, out_len: c_uint) -> c_uint;
@@ -112,10 +112,11 @@ pub fn decompress(data: &[u8], out_len: usize) -> LzfResult<Vec<u8>> {
                                          out.as_ptr() as *const c_void, out_len as c_uint) };
     match result {
         0 => {
-            match std::os::errno() {
-                7  => Err(LzfError::BufferTooSmall),
-                22 => Err(LzfError::DataCorrupted),
-                e  => Err(LzfError::UnknownError(e))
+            match Error::last_os_error().raw_os_error() {
+                Some(7)  => Err(LzfError::BufferTooSmall),
+                Some(22) => Err(LzfError::DataCorrupted),
+                Some(e)  => Err(LzfError::UnknownError(e)),
+                None     => Err(LzfError::UnknownError(0)),
             }
         },
         _ => {
