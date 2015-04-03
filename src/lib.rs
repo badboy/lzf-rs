@@ -14,7 +14,7 @@
 //!
 //! let compressed = lzf::compress(data.as_bytes()).unwrap();
 //!
-//! let decompressed = lzf::decompress(compressed.as_slice(), data.len()).unwrap();
+//! let decompressed = lzf::decompress(&compressed, data.len()).unwrap();
 //! ```
 
 extern crate libc;
@@ -153,10 +153,10 @@ fn test_compress_decompress_lorem_round() {
         Err(err) => panic!("Compression failed with error {:?}", err)
     };
 
-    match decompress(compressed.as_slice(), lorem.len()) {
+    match decompress(&compressed, lorem.len()) {
         Ok(decompressed) => {
             assert_eq!(lorem.len(), decompressed.len());
-            assert_eq!(lorem.as_bytes(), decompressed.as_slice());
+            assert_eq!(lorem.as_bytes(), &decompressed[..]);
         },
         Err(err) => panic!("Decompression failed with error {:?}", err)
     };
@@ -171,7 +171,7 @@ fn test_decompress_fails_with_short_buffer() {
         Err(err) => panic!("Compression failed with error {:?}", err)
     };
 
-    match decompress(compressed.as_slice(), 10) {
+    match decompress(&compressed, 10) {
         Ok(_) => panic!("Decompression worked. That should not happen"),
         Err(err) => assert_eq!(LzfError::BufferTooSmall, err)
     }
