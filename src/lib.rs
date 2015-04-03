@@ -17,8 +17,6 @@
 //! let decompressed = lzf::decompress(compressed.as_slice(), data.len()).unwrap();
 //! ```
 
-#![feature(libc)]
-
 extern crate libc;
 
 use libc::{c_uint,c_void};

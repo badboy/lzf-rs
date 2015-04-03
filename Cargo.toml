@@ -10,5 +10,8 @@ license = "BSD-3-Clause"
 readme = "README.md"
 build = "build.rs"
 
+[dependencies]
+libc = "*"
+
 [build-dependencies]
 gcc = "*"
