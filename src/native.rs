@@ -1,9 +1,9 @@
 use super::{LzfResult,LzfError};
 
-pub fn decompress(data: &[u8]) -> LzfResult<Vec<u8>> {
+pub fn decompress(data: &[u8], out_len: usize) -> LzfResult<Vec<u8>> {
     let mut current_offset = 0;
 
-    let mut output = vec![];
+    let mut output = Vec::with_capacity(out_len);
 
     let in_len = data.len();
 
@@ -74,6 +74,6 @@ fn test_native_decompress_lorem() {
 
     let compressed = compress(lorem.as_bytes()).unwrap();
 
-    let decompressed = decompress(&compressed[..]).unwrap();
+    let decompressed = decompress(&compressed[..], lorem.len()).unwrap();
     assert_eq!(lorem.as_bytes(), &decompressed[..]);
 }
