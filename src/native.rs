@@ -95,7 +95,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
 }
 
 #[test]
-fn test_native_decompress_lorem() {
+fn test_decompress_lorem() {
     use super::compress;
 
     let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod \
@@ -112,4 +112,31 @@ fn test_native_decompress_lorem() {
 
     let decompressed = decompress(&compressed[..], 1000).unwrap();
     assert_eq!(lorem.len(), decompressed.len());
+}
+
+#[test]
+fn test_decompress_fails_with_short_buffer() {
+    use super::compress;
+
+    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
+
+    let compressed = match compress(lorem.as_bytes()) {
+        Ok(c) => c,
+        Err(err) => panic!("Compression failed with error {:?}", err)
+    };
+
+    match decompress(&compressed, 10) {
+        Ok(_) => panic!("Decompression worked. That should not happen"),
+        Err(err) => assert_eq!(LzfError::BufferTooSmall, err)
+    }
+}
+
+#[test]
+fn test_decompress_fails_for_corrupted_data() {
+    let lorem = "Lorem ipsum dolor sit amet";
+
+    match decompress(lorem.as_bytes(), lorem.len()) {
+        Ok(_) => panic!("Decompression worked. That should not happen"),
+        Err(err) => assert_eq!(LzfError::DataCorrupted, err)
+    }
 }
