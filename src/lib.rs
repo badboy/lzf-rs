@@ -23,6 +23,8 @@ use libc::{c_uint,c_void};
 use std::fmt;
 use std::io::Error;
 
+pub mod native;
+
 extern {
     fn lzf_compress(in_data: *const c_void, in_len: c_uint, out_data: *const c_void, out_len: c_uint) -> c_uint;
     fn lzf_decompress(in_data: *const c_void, in_len: c_uint, out_data: *const c_void, out_len: c_uint) -> c_uint;
@@ -127,7 +129,7 @@ pub fn decompress(data: &[u8], out_len: usize) -> LzfResult<Vec<u8>> {
 #[test]
 fn test_compress_skips_short() {
     match compress("foo".as_bytes()) {
-        Ok(_) => panic!("Compression did _something_, with is wrong for 'foo'"),
+        Ok(_) => panic!("Compression did _something_, which is wrong for 'foo'"),
         Err(err) => assert_eq!(LzfError::NoCompressionPossible, err)
     }
 }
