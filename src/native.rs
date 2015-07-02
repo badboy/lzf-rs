@@ -1,27 +1,42 @@
 use super::{LzfResult,LzfError};
+use std::ptr;
+use std::mem;
 
-pub fn decompress(data: &[u8], out_len: usize) -> LzfResult<Vec<u8>> {
+pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     let mut current_offset = 0;
 
-    let mut output = Vec::with_capacity(out_len);
+    // We have sanity checks to not exceed this capacity.
+    let mut output = Vec::with_capacity(out_len_should);
+    unsafe { output.set_len(out_len_should) };
+    let mut out_len : usize = 0;
 
     let in_len = data.len();
 
     while current_offset < in_len {
-        let mut ctrl = data[current_offset] as usize;
+        let mut ctrl = unsafe{*data.get_unchecked(current_offset)} as usize;
         current_offset += 1;
 
         if ctrl < (1<<5) {
             ctrl += 1;
 
+            if out_len + ctrl > out_len_should {
+                return Err(LzfError::BufferTooSmall);
+            }
+
             if current_offset+ctrl > in_len {
                 return Err(LzfError::DataCorrupted);
             }
 
-            while ctrl > 0 {
-                output.push(data[current_offset]);
-                current_offset += 1;
-                ctrl -= 1;
+            // We can simply memcpy everything from the input to the output
+            unsafe {
+                let (src, _) : (*const u8, usize) = mem::transmute(&data[..]);
+                let src = src.offset(current_offset as isize);
+                let (dst, _) : (*mut u8, usize) = mem::transmute(&output[..]);
+                let dst = dst.offset((out_len) as isize);
+                ptr::copy_nonoverlapping(src, dst, ctrl);
+
+                current_offset += ctrl;
+                out_len += ctrl;
             }
         } else {
             let mut len = ctrl >> 5;
@@ -29,34 +44,52 @@ pub fn decompress(data: &[u8], out_len: usize) -> LzfResult<Vec<u8>> {
             let mut ref_offset = (((ctrl & 0x1f) << 8) + 1) as i32;
 
             if len == 7 {
-                len += data[current_offset] as usize;
+                len += unsafe{*data.get_unchecked(current_offset)} as usize;
                 current_offset += 1;
+
+                if current_offset >= in_len {
+                    return Err(LzfError::DataCorrupted);
+                }
             }
 
-            ref_offset += data[current_offset] as i32;
+            ref_offset += unsafe{*data.get_unchecked(current_offset)} as i32;
             current_offset += 1;
 
-            let mut ref_pos = (output.len() as i32) - ref_offset;
+            if current_offset + len + 2 > out_len_should {
+                return Err(LzfError::BufferTooSmall);
+            }
+
+            let mut ref_pos = (out_len as i32) - ref_offset;
             if ref_pos < 0 {
                 return Err(LzfError::DataCorrupted);
             }
 
-            let c = output[ref_pos as usize];
-            output.push(c);
+            let c = unsafe{*output.get_unchecked(ref_pos as usize)};
+            output[out_len] = c;
+            out_len += 1;
             ref_pos += 1;
 
-            let c = output[ref_pos as usize];
-            output.push(c);
+            let c = unsafe{*output.get_unchecked(ref_pos as usize)};
+            output[out_len] = c;
+            out_len += 1;
             ref_pos += 1;
 
-            while len > 0 {
-                let c = output[ref_pos as usize];
-                output.push(c);
-                ref_pos += 1;
-                len -= 1;
+            // We can safely use copy_nonoverlapping here,
+            // as we know that we only copy data from before our current insertion point.
+            unsafe {
+                let (src, _) : (*const u8, usize) = mem::transmute(&output[..]);
+                let src = src.offset(ref_pos as isize);
+                let (dst, _) : (*mut u8, usize) = mem::transmute(&output[..]);
+                let dst = dst.offset((out_len) as isize);
+
+                ptr::copy_nonoverlapping(src, dst, len);
+                out_len += len;
             }
         }
     }
+
+    // Set the real length now, user might have passed a bigger buffer in the first place.
+    unsafe { output.set_len(out_len) };
 
     Ok(output)
 }
@@ -76,4 +109,7 @@ fn test_native_decompress_lorem() {
 
     let decompressed = decompress(&compressed[..], lorem.len()).unwrap();
     assert_eq!(lorem.as_bytes(), &decompressed[..]);
+
+    let decompressed = decompress(&compressed[..], 1000).unwrap();
+    assert_eq!(lorem.len(), decompressed.len());
 }
