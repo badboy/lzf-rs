@@ -2,6 +2,8 @@ use super::{LzfResult,LzfError};
 use std::ptr;
 use std::mem;
 
+pub use native_compress::compress;
+
 pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     let mut current_offset = 0;
 

@@ -23,6 +23,7 @@ use libc::{c_uint,c_void};
 use std::fmt;
 use std::io::Error;
 
+mod native_compress;
 pub mod native;
 
 extern {
