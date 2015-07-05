@@ -240,3 +240,20 @@ fn test_compress_decompress_lorem_round() {
         Err(err) => panic!("Decompression failed with error {:?}", err)
     };
 }
+
+#[test]
+fn test_alice_wonderland_both() {
+    let alice = "\r\n\r\n\r\n\r\n                ALICE'S ADVENTURES IN WONDERLAND\r\n";
+
+    let compressed = match compress(alice.as_bytes()) {
+        Ok(c) => c,
+        Err(err) => panic!("Compression failed with error {:?}", err)
+    };
+
+    let c_compressed = match super::compress(alice.as_bytes()) {
+        Ok(c) => c,
+        Err(err) => panic!("Compression failed with error {:?}", err)
+    };
+
+    assert_eq!(&compressed[..], &c_compressed[..]);
+}
