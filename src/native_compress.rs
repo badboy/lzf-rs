@@ -43,7 +43,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
     let mut out = Vec::with_capacity(out_buf_len);
     unsafe { out.set_len(out_buf_len) };
 
-    let mut out_len : i32 = 0;
+    let mut out_len : i32 = 1; /* start run by default */
 
     let mut htab = [0; 1<<HLOG];
 
@@ -54,8 +54,6 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
     }
 
     let mut lit : i32 = 0;
-
-    out_len += 1;
 
     let mut hval : u32;
     let mut ref_offset;
@@ -82,8 +80,9 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             let mut len = 2;
             let maxlen = cmp::min(in_len - current_offset - len, MAX_REF);
 
+            /* stop run */
             unsafe { *out.get_unchecked_mut((out_len - lit - 1) as usize) = (lit as u8).wrapping_sub(1); }
-            out_len -= not(lit);
+            out_len -= not(lit); /* undo run if length is zero */
 
             if out_len as i32 + 3 + 1 >= out_buf_len as i32 {
                 return Err(LzfError::NoCompressionPossible);
@@ -120,7 +119,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
                 break;
             }
 
-            len -= 2;
+            len -= 2; /* len is now #octets - 1 */
             current_offset += 1;
 
             if len < 7 {
@@ -135,9 +134,10 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             }
 
             unsafe { *out.get_unchecked_mut(out_len as usize) = off as u8; }
-            out_len += 2;
+            out_len += 2; /* start run */
             lit = 0;
 
+            /* we add here, because we later substract from the total length */
             current_offset += len-1;
 
             if current_offset >= in_len {
@@ -154,24 +154,26 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             unsafe { *htab.get_unchecked_mut(idx(hval)) = current_offset; }
             current_offset += 1;
         } else {
+            /* one more literal byte we must copy */
             if current_offset >= out_buf_len {
                 return Err(LzfError::NoCompressionPossible);
             }
 
             lit += 1;
             unsafe { *out.get_unchecked_mut(out_len as usize) = get(data,current_offset); }
-
             out_len += 1;
             current_offset += 1;
 
             if lit == MAX_LIT {
+                /* stop run */
                 unsafe { *out.get_unchecked_mut((out_len - lit - 1) as usize) = (lit as u8).wrapping_sub(1); }
                 lit = 0;
-                out_len += 1;
+                out_len += 1; /* start run */
             }
         }
     }
 
+    /* at most 3 bytes can be missing here */
     if out_len + 3 > out_buf_len as i32 {
         return Err(LzfError::NoCompressionPossible);
     }
@@ -183,14 +185,16 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
         current_offset += 1;
 
         if lit == MAX_LIT {
+            /* stop run */
             unsafe { *out.get_unchecked_mut((out_len - lit - 1) as usize) = (lit as u8).wrapping_sub(1); }
             lit = 0;
-            out_len += 1;
+            out_len += 1; /* start run */
         }
     }
 
+    /* end run */
     unsafe { *out.get_unchecked_mut((out_len - lit - 1) as usize) = (lit as u8).wrapping_sub(1); }
-    out_len -= not(lit);
+    out_len -= not(lit); /* undo run if length is zero */
 
     unsafe { out.set_len(out_len as usize) };
 
