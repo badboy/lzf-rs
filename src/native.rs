@@ -74,16 +74,12 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
             out_len += 1;
             ref_pos += 1;
 
-            // We can safely use copy_nonoverlapping here,
-            // as we know that we only copy data from before our current insertion point.
-            unsafe {
-                let (src, _) : (*const u8, usize) = mem::transmute(&output[..]);
-                let src = src.offset(ref_pos as isize);
-                let (dst, _) : (*mut u8, usize) = mem::transmute(&output[..]);
-                let dst = dst.offset((out_len) as isize);
-
-                ptr::copy_nonoverlapping(src, dst, len);
-                out_len += len;
+            while len > 0 {
+                let c = unsafe{*output.get_unchecked(ref_pos as usize)};
+                output[out_len] = c;
+                out_len += 1;
+                ref_pos += 1;
+                len -= 1;
             }
         }
     }
@@ -138,5 +134,23 @@ fn test_decompress_fails_for_corrupted_data() {
     match decompress(lorem.as_bytes(), lorem.len()) {
         Ok(_) => panic!("Decompression worked. That should not happen"),
         Err(err) => assert_eq!(LzfError::DataCorrupted, err)
+    }
+}
+
+#[test]
+fn test_alice_wonderland() {
+    let alice = "\r\n\r\n\r\n\r\n                ALICE'S ADVENTURES IN WONDERLAND\r\n";
+
+    let compressed = match compress(alice.as_bytes()) {
+        Ok(c) => c,
+        Err(err) => panic!("Compression failed with error {:?}", err)
+    };
+
+    match decompress(&compressed, alice.len()) {
+        Ok(decompressed) => {
+            assert_eq!(alice.len(), decompressed.len());
+            assert_eq!(alice.as_bytes(), &decompressed[..]);
+        },
+        Err(err) => panic!("Decompression failed with error {:?}", err)
     }
 }
