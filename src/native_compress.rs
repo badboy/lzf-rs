@@ -1,5 +1,5 @@
 use super::{LzfResult,LzfError};
-use std::cmp;
+use std::{cmp,mem};
 
 const HLOG    : usize = 16;
 const HSIZE   : u32 = 1 << HLOG;
@@ -40,7 +40,12 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 
     let mut out_len : i32 = 1; /* start run by default */
 
-    let mut htab = [0; 1<<HLOG];
+    /* This goes against all of Rust's statically verifiable guarantees,
+     * but I'm mostly sure, atleast for sane inputs, we only ever access
+     * already-written parts of the array.
+     * The otherwise happening memset slows down the code by a factor of 20-30
+     */
+    let mut htab : [usize; 1<<HLOG] = unsafe { mem::uninitialized() };
 
     let mut current_offset = 0;
 
