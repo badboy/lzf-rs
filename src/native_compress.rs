@@ -7,22 +7,18 @@ const MAX_OFF : usize = 1 << 13;
 const MAX_REF : usize = ((1 << 8) + (1 << 3));
 const MAX_LIT : i32 = (1 << 5);
 
-#[inline(always)]
 fn get(d: &[u8], i: usize) -> u8 {
     unsafe { *d.get_unchecked(i) }
 }
 
-#[inline(always)]
 fn first(p: &[u8], off: usize) -> u32 {
     ((get(p,off) as u32) << 8) | get(p,off+1) as u32
 }
 
-#[inline(always)]
 fn next(v: u32, p: &[u8], off: usize) -> u32 {
     (v << 8) | get(p,off+2) as u32
 }
 
-#[inline(always)]
 fn idx(h: u32) -> usize {
     let h = h as u64;
     (
@@ -32,7 +28,6 @@ fn idx(h: u32) -> usize {
     ) as usize
 }
 
-#[inline(always)]
 fn not(i: i32) -> i32 {
     if i == 0 { 1 } else { 0 }
 }
