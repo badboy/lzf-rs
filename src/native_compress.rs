@@ -89,29 +89,6 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             }
 
             loop {
-                // Unrool loop.
-                if maxlen > 16 {
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                    len += 1; if get(data,ref_offset+len) != get(data,current_offset+len) { break; }
-                }
-
                 len += 1;
                 while len < maxlen && get(data,ref_offset+len) == get(data,current_offset+len) {
                     len += 1;
