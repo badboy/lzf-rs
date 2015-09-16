@@ -2,8 +2,23 @@ use super::{LzfResult,LzfError};
 use std::ptr;
 use std::mem;
 
-pub use native_compress::compress;
-
+/// Decompress the given data, if possible.
+/// The return value will be set to the error if compression fails.
+///
+/// The length of the output buffer can be specified.
+/// If the output buffer is not large enough to hold the decompressed data,
+/// BufferTooSmall is returned.
+/// Otherwise the number of decompressed bytes
+/// (i.e. the original length of the data) is returned.
+///
+/// If an error in the compressed data is detected, DataCorrupted is returned.
+///
+/// Example:
+///
+/// ```rust,no_run
+/// let data = "[your-compressed-data]";
+/// let decompressed = lzf::decompress(data.as_bytes(), 10);
+/// ```
 pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     let mut current_offset = 0;
 
@@ -141,6 +156,8 @@ fn test_decompress_fails_for_corrupted_data() {
 
 #[test]
 fn test_alice_wonderland() {
+    use super::compress;
+
     let alice = "\r\n\r\n\r\n\r\n                ALICE'S ADVENTURES IN WONDERLAND\r\n";
 
     let compressed = match compress(alice.as_bytes()) {

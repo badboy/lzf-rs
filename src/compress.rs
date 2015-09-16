@@ -28,6 +28,19 @@ fn not(i: i32) -> i32 {
     if i == 0 { 1 } else { 0 }
 }
 
+/// Compress the given data, if possible.
+/// The return value will be set to the error if compression fails.
+///
+/// The buffer is always set to the same size as the input buffer.
+/// If that is not enough to hold the lzf-compressed data,
+/// an error will be returned.
+///
+/// Example:
+///
+/// ```rust
+/// let data = "foobar";
+/// let compressed = lzf::compress(data.as_bytes());
+/// ```
 pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
     let in_len = data.len();
     let out_buf_len = in_len;
@@ -193,7 +206,7 @@ fn test_compress_lorem() {
 
 #[test]
 fn test_compress_decompress_lorem_round() {
-    use super::native;
+    use super::decompress;
 
     let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
 
@@ -202,7 +215,7 @@ fn test_compress_decompress_lorem_round() {
         Err(err) => panic!("Compression failed with error {:?}", err)
     };
 
-    match native::decompress(&compressed, lorem.len()) {
+    match decompress(&compressed, lorem.len()) {
         Ok(decompressed) => {
             assert_eq!(lorem.len(), decompressed.len());
             assert_eq!(lorem.as_bytes(), &decompressed[..]);
