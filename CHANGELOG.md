@@ -1,3 +1,7 @@
+### 0.3.0 (2015-09-16)
+
+* Replace C code with Rust code
+
 ### 0.2.3 (2015-04-16)
 
 * Fix tests to work on beta
