@@ -11,8 +11,7 @@ addons:
 rust:
   - nightly
   - beta
-# stable currently has no wrapping operands
-  #- stable
+  - stable
 
 before_script:
   - |
