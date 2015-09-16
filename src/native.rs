@@ -15,7 +15,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     let in_len = data.len();
 
     while current_offset < in_len {
-        let mut ctrl = unsafe{*data.get_unchecked(current_offset)} as usize;
+        let mut ctrl = data[current_offset] as usize;
         current_offset += 1;
 
         if ctrl < (1<<5) {
@@ -46,7 +46,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
             let mut ref_offset = (((ctrl & 0x1f) << 8) + 1) as i32;
 
             if len == 7 {
-                len += unsafe{*data.get_unchecked(current_offset)} as usize;
+                len += data[current_offset] as usize;
                 current_offset += 1;
 
                 if current_offset >= in_len {
@@ -54,7 +54,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
                 }
             }
 
-            ref_offset += unsafe{*data.get_unchecked(current_offset)} as i32;
+            ref_offset += data[current_offset] as i32;
             current_offset += 1;
 
             if current_offset + len + 2 > out_len_should {
@@ -66,18 +66,18 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
                 return Err(LzfError::DataCorrupted);
             }
 
-            let c = unsafe{*output.get_unchecked(ref_pos as usize)};
+            let c = output[ref_pos as usize];
             output[out_len] = c;
             out_len += 1;
             ref_pos += 1;
 
-            let c = unsafe{*output.get_unchecked(ref_pos as usize)};
+            let c = output[ref_pos as usize];
             output[out_len] = c;
             out_len += 1;
             ref_pos += 1;
 
             while len > 0 {
-                let c = unsafe{*output.get_unchecked(ref_pos as usize)};
+                let c = output[ref_pos as usize];
                 output[out_len] = c;
                 out_len += 1;
                 ref_pos += 1;

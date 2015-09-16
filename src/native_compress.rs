@@ -7,16 +7,12 @@ const MAX_OFF : usize = 1 << 13;
 const MAX_REF : usize = ((1 << 8) + (1 << 3));
 const MAX_LIT : i32 = (1 << 5);
 
-fn get(d: &[u8], i: usize) -> u8 {
-    unsafe { *d.get_unchecked(i) }
-}
-
 fn first(p: &[u8], off: usize) -> u32 {
-    ((get(p,off) as u32) << 8) | get(p,off+1) as u32
+    ((p[off] as u32) << 8) | p[off+1] as u32
 }
 
 fn next(v: u32, p: &[u8], off: usize) -> u32 {
-    (v << 8) | get(p,off+2) as u32
+    (v << 8) | p[off+2] as u32
 }
 
 fn idx(h: u32) -> usize {
@@ -41,8 +37,9 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
     let mut out_len : i32 = 1; /* start run by default */
 
     /* This goes against all of Rust's statically verifiable guarantees,
-     * but I'm mostly sure, atleast for sane inputs, we only ever access
-     * already-written parts of the array.
+     * but for the below use-case accessing uninitialized memory is ok,
+     * as we have other checks to make sure the read memory is not used.
+     *
      * The otherwise happening memset slows down the code by a factor of 20-30
      */
     let mut htab : [usize; 1<<HLOG] = unsafe { mem::uninitialized() };
@@ -64,24 +61,22 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
         hval = next(hval, data, current_offset);
         let hslot_idx = idx(hval);
 
-        unsafe {
-            ref_offset = *htab.get_unchecked(hslot_idx);
-            *htab.get_unchecked_mut(hslot_idx) = current_offset;
-        }
+        ref_offset = htab[hslot_idx];
+        htab[hslot_idx] = current_offset;
 
         let off = current_offset.wrapping_sub(ref_offset).wrapping_sub(1);
         if off < MAX_OFF
             && current_offset+4 < in_len
             && ref_offset > 0
-            && get(data,ref_offset+0) == get(data,current_offset+0)
-            && get(data,ref_offset+1) == get(data,current_offset+1)
-            && get(data,ref_offset+2) == get(data,current_offset+2) {
+            && data[ref_offset+0] == data[current_offset+0]
+            && data[ref_offset+1] == data[current_offset+1]
+            && data[ref_offset+2] == data[current_offset+2] {
 
             let mut len = 2;
             let maxlen = cmp::min(in_len - current_offset - len, MAX_REF);
 
             /* stop run */
-            unsafe { *out.get_unchecked_mut((out_len - lit - 1) as usize) = (lit as u8).wrapping_sub(1); }
+            out[(out_len - lit - 1) as usize] = (lit as u8).wrapping_sub(1);
             out_len -= not(lit); /* undo run if length is zero */
 
             if out_len as i32 + 3 + 1 >= out_buf_len as i32 {
@@ -90,7 +85,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 
             loop {
                 len += 1;
-                while len < maxlen && get(data,ref_offset+len) == get(data,current_offset+len) {
+                while len < maxlen && data[ref_offset+len] == data[current_offset+len] {
                     len += 1;
                 }
                 break;
@@ -100,17 +95,15 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             current_offset += 1;
 
             if len < 7 {
-                unsafe{ *out.get_unchecked_mut(out_len as usize) = (off >> 8) as u8 + (len << 5) as u8; }
+                out[out_len as usize] = (off >> 8) as u8 + (len << 5) as u8;
                 out_len += 1;
             } else {
-                unsafe {
-                    *out.get_unchecked_mut(out_len as usize) = (off >> 8) as u8 + (7 << 5);
-                    *out.get_unchecked_mut(out_len as usize + 1) = (len as u8).wrapping_sub(7);
-                }
+                out[out_len as usize] = (off >> 8) as u8 + (7 << 5);
+                out[out_len as usize + 1] = (len as u8).wrapping_sub(7);
                 out_len += 2;
             }
 
-            unsafe { *out.get_unchecked_mut(out_len as usize) = off as u8; }
+            out[out_len as usize] = off as u8;
             out_len += 2; /* start run */
             lit = 0;
 
@@ -124,11 +117,11 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             hval = first(data, current_offset);
 
             hval = next(hval, data, current_offset);
-            unsafe { *htab.get_unchecked_mut(idx(hval)) = current_offset; }
+            htab[idx(hval)] = current_offset;
             current_offset += 1;
 
             hval = next(hval, data, current_offset);
-            unsafe { *htab.get_unchecked_mut(idx(hval)) = current_offset; }
+            htab[idx(hval)] = current_offset;
             current_offset += 1;
         } else {
             /* one more literal byte we must copy */
@@ -137,13 +130,13 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             }
 
             lit += 1;
-            unsafe { *out.get_unchecked_mut(out_len as usize) = get(data,current_offset); }
+            out[out_len as usize] = data[current_offset];
             out_len += 1;
             current_offset += 1;
 
             if lit == MAX_LIT {
                 /* stop run */
-                unsafe { *out.get_unchecked_mut((out_len - lit - 1) as usize) = (lit as u8).wrapping_sub(1); }
+                out[(out_len - lit - 1) as usize] = (lit as u8).wrapping_sub(1);
                 lit = 0;
                 out_len += 1; /* start run */
             }
@@ -157,20 +150,20 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 
     while current_offset < in_len {
         lit += 1;
-        unsafe { *out.get_unchecked_mut(out_len as usize) = get(data,current_offset); }
+        out[out_len as usize] = data[current_offset];
         out_len += 1;
         current_offset += 1;
 
         if lit == MAX_LIT {
             /* stop run */
-            unsafe { *out.get_unchecked_mut((out_len - lit - 1) as usize) = (lit as u8).wrapping_sub(1); }
+            out[(out_len - lit - 1) as usize] = (lit as u8).wrapping_sub(1);
             lit = 0;
             out_len += 1; /* start run */
         }
     }
 
     /* end run */
-    unsafe { *out.get_unchecked_mut((out_len - lit - 1) as usize) = (lit as u8).wrapping_sub(1); }
+    out[(out_len - lit - 1) as usize] = (lit as u8).wrapping_sub(1);
     out_len -= not(lit); /* undo run if length is zero */
 
     unsafe { out.set_len(out_len as usize) };
