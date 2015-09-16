@@ -8,10 +8,3 @@ homepage = "https://github.com/badboy/lzf-rs"
 documentation = "http://badboy.github.io/lzf-rs/"
 license = "BSD-3-Clause"
 readme = "README.md"
-build = "build.rs"
-
-[dependencies]
-libc = "*"
-
-[build-dependencies]
-gcc = "*"

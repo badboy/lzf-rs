@@ -17,8 +17,6 @@
 //! let decompressed = lzf::decompress(&compressed, data.len()).unwrap();
 //! ```
 
-extern crate libc;
-
 use std::fmt;
 
 mod compress;
