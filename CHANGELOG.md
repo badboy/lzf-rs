@@ -1,3 +1,7 @@
+### 0.3.1 (2015-09-27)
+
+* Correct output length calculation
+
 ### 0.3.0 (2015-09-16)
 
 * Replace C code with Rust code
