@@ -1,4 +1,4 @@
-use super::{LzfResult,LzfError};
+use super::{LzfResult, LzfError};
 use std::ptr;
 use std::mem;
 
@@ -25,7 +25,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     // We have sanity checks to not exceed this capacity.
     let mut output = Vec::with_capacity(out_len_should);
     unsafe { output.set_len(out_len_should) };
-    let mut out_len : usize = 0;
+    let mut out_len: usize = 0;
 
     let in_len = data.len();
 
@@ -33,22 +33,22 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
         let mut ctrl = data[current_offset] as usize;
         current_offset += 1;
 
-        if ctrl < (1<<5) {
+        if ctrl < (1 << 5) {
             ctrl += 1;
 
             if out_len + ctrl > out_len_should {
                 return Err(LzfError::BufferTooSmall);
             }
 
-            if current_offset+ctrl > in_len {
+            if current_offset + ctrl > in_len {
                 return Err(LzfError::DataCorrupted);
             }
 
             // We can simply memcpy everything from the input to the output
             unsafe {
-                let (src, _) : (*const u8, usize) = mem::transmute(&data[..]);
+                let (src, _): (*const u8, usize) = mem::transmute(&data[..]);
                 let src = src.offset(current_offset as isize);
-                let (dst, _) : (*mut u8, usize) = mem::transmute(&output[..]);
+                let (dst, _): (*mut u8, usize) = mem::transmute(&output[..]);
                 let dst = dst.offset((out_len) as isize);
                 ptr::copy_nonoverlapping(src, dst, ctrl);
 
@@ -131,16 +131,21 @@ fn test_decompress_lorem() {
 fn test_decompress_fails_with_short_buffer() {
     use super::compress;
 
-    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
+    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod \
+                 tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At \
+                 vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, \
+                 no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit \
+                 amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut \
+                 labore et dolore magna aliquyam erat, sed diam voluptua.";
 
     let compressed = match compress(lorem.as_bytes()) {
         Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {:?}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
     match decompress(&compressed, 10) {
         Ok(_) => panic!("Decompression worked. That should not happen"),
-        Err(err) => assert_eq!(LzfError::BufferTooSmall, err)
+        Err(err) => assert_eq!(LzfError::BufferTooSmall, err),
     }
 }
 
@@ -150,7 +155,7 @@ fn test_decompress_fails_for_corrupted_data() {
 
     match decompress(lorem.as_bytes(), lorem.len()) {
         Ok(_) => panic!("Decompression worked. That should not happen"),
-        Err(err) => assert_eq!(LzfError::DataCorrupted, err)
+        Err(err) => assert_eq!(LzfError::DataCorrupted, err),
     }
 }
 
@@ -162,15 +167,15 @@ fn test_alice_wonderland() {
 
     let compressed = match compress(alice.as_bytes()) {
         Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {:?}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
     match decompress(&compressed, alice.len()) {
         Ok(decompressed) => {
             assert_eq!(alice.len(), decompressed.len());
             assert_eq!(alice.as_bytes(), &decompressed[..]);
-        },
-        Err(err) => panic!("Decompression failed with error {:?}", err)
+        }
+        Err(err) => panic!("Decompression failed with error {:?}", err),
     }
 }
 #[test]

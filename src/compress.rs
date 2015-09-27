@@ -1,5 +1,5 @@
-use super::{LzfResult,LzfError};
-use std::{cmp,mem};
+use super::{LzfResult, LzfError};
+use std::{cmp, mem};
 
 const HLOG    : usize = 16;
 const HSIZE   : u32 = 1 << HLOG;
@@ -25,7 +25,11 @@ fn idx(h: u32) -> usize {
 }
 
 fn not(i: i32) -> i32 {
-    if i == 0 { 1 } else { 0 }
+    if i == 0 {
+        1
+    } else {
+        0
+    }
 }
 
 /// Compress the given data, if possible.
@@ -47,7 +51,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
     let mut out = Vec::with_capacity(out_buf_len);
     unsafe { out.set_len(out_buf_len) };
 
-    let mut out_len : i32 = 1; /* start run by default */
+    let mut out_len: i32 = 1; /* start run by default */
 
     /* This goes against all of Rust's statically verifiable guarantees,
      * but for the below use-case accessing uninitialized memory is ok,
@@ -55,7 +59,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
      *
      * The otherwise happening memset slows down the code by a factor of 20-30
      */
-    let mut htab : [usize; 1<<HLOG] = unsafe { mem::uninitialized() };
+    let mut htab: [usize; 1 << HLOG] = unsafe { mem::uninitialized() };
 
     let mut current_offset = 0;
 
@@ -63,14 +67,14 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
         return Err(LzfError::DataCorrupted);
     }
 
-    let mut lit : i32 = 0;
+    let mut lit: i32 = 0;
 
-    let mut hval : u32;
+    let mut hval: u32;
     let mut ref_offset;
 
     hval = first(data, current_offset);
 
-    while current_offset < in_len-2 {
+    while current_offset < in_len - 2 {
         hval = next(hval, data, current_offset);
         let hslot_idx = idx(hval);
 
@@ -78,12 +82,10 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
         htab[hslot_idx] = current_offset;
 
         let off = current_offset.wrapping_sub(ref_offset).wrapping_sub(1);
-        if off < MAX_OFF
-            && current_offset+4 < in_len
-            && ref_offset > 0
-            && data[ref_offset+0] == data[current_offset+0]
-            && data[ref_offset+1] == data[current_offset+1]
-            && data[ref_offset+2] == data[current_offset+2] {
+        if off < MAX_OFF && current_offset + 4 < in_len && ref_offset > 0 &&
+           data[ref_offset+0] == data[current_offset+0] &&
+           data[ref_offset+1] == data[current_offset+1] &&
+           data[ref_offset+2] == data[current_offset+2] {
 
             let mut len = 2;
             let maxlen = cmp::min(in_len - current_offset - len, MAX_REF);
@@ -121,7 +123,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             lit = 0;
 
             /* we add here, because we later substract from the total length */
-            current_offset += len-1;
+            current_offset += len - 1;
 
             if current_offset >= in_len {
                 break;
@@ -188,19 +190,24 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 fn test_compress_skips_short() {
     match compress("foo".as_bytes()) {
         Ok(_) => panic!("Compression did _something_, which is wrong for 'foo'"),
-        Err(err) => assert_eq!(LzfError::NoCompressionPossible, err)
+        Err(err) => assert_eq!(LzfError::NoCompressionPossible, err),
     }
 }
 
 #[test]
 fn test_compress_lorem() {
-    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
+    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod \
+                 tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At \
+                 vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, \
+                 no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit \
+                 amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut \
+                 labore et dolore magna aliquyam erat, sed diam voluptua.";
 
     match compress(lorem.as_bytes()) {
         Ok(compressed) => {
             assert_eq!(272, compressed.len())
         }
-        Err(err) => panic!("Compression failed with error {:?}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err),
     }
 }
 
@@ -208,19 +215,24 @@ fn test_compress_lorem() {
 fn test_compress_decompress_lorem_round() {
     use super::decompress;
 
-    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
+    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod \
+                 tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At \
+                 vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, \
+                 no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit \
+                 amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut \
+                 labore et dolore magna aliquyam erat, sed diam voluptua.";
 
     let compressed = match compress(lorem.as_bytes()) {
         Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {:?}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
     match decompress(&compressed, lorem.len()) {
         Ok(decompressed) => {
             assert_eq!(lorem.len(), decompressed.len());
             assert_eq!(lorem.as_bytes(), &decompressed[..]);
-        },
-        Err(err) => panic!("Decompression failed with error {:?}", err)
+        }
+        Err(err) => panic!("Decompression failed with error {:?}", err),
     };
 }
 
@@ -230,12 +242,12 @@ fn test_alice_wonderland_both() {
 
     let compressed = match compress(alice.as_bytes()) {
         Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {:?}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
     let c_compressed = match super::compress(alice.as_bytes()) {
         Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {:?}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
     assert_eq!(&compressed[..], &c_compressed[..]);

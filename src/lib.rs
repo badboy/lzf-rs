@@ -29,14 +29,15 @@ pub enum LzfError {
     BufferTooSmall,
     DataCorrupted,
     NoCompressionPossible,
-    UnknownError(i32)
+    UnknownError(i32),
 }
 
 impl fmt::Display for LzfError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             LzfError::BufferTooSmall => {
-                write!(f, "the given buffer is too small to handle the uncompressed data")
+                write!(f,
+                       "the given buffer is too small to handle the uncompressed data")
             }
             LzfError::DataCorrupted => {
                 write!(f, "the given data is corrupted")
@@ -57,36 +58,46 @@ pub type LzfResult<T> = Result<T, LzfError>;
 fn test_compress_skips_short() {
     match compress("foo".as_bytes()) {
         Ok(_) => panic!("Compression did _something_, which is wrong for 'foo'"),
-        Err(err) => assert_eq!(LzfError::NoCompressionPossible, err)
+        Err(err) => assert_eq!(LzfError::NoCompressionPossible, err),
     }
 }
 
 #[test]
 fn test_compress_lorem() {
-    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
+    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod \
+                 tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At \
+                 vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, \
+                 no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit \
+                 amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut \
+                 labore et dolore magna aliquyam erat, sed diam voluptua.";
 
     match compress(lorem.as_bytes()) {
         Ok(compressed) => {
             assert_eq!(272, compressed.len())
         }
-        Err(err) => panic!("Compression failed with error {:?}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err),
     }
 }
 
 #[test]
 fn test_compress_decompress_lorem_round() {
-    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
+    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod \
+                 tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At \
+                 vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, \
+                 no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit \
+                 amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut \
+                 labore et dolore magna aliquyam erat, sed diam voluptua.";
 
     let compressed = match compress(lorem.as_bytes()) {
         Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {:?}", err)
+        Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
     match decompress(&compressed, lorem.len()) {
         Ok(decompressed) => {
             assert_eq!(lorem.len(), decompressed.len());
             assert_eq!(lorem.as_bytes(), &decompressed[..]);
-        },
-        Err(err) => panic!("Decompression failed with error {:?}", err)
+        }
+        Err(err) => panic!("Decompression failed with error {:?}", err),
     };
 }
