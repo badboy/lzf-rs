@@ -72,7 +72,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
             ref_offset += data[current_offset] as i32;
             current_offset += 1;
 
-            if current_offset + len + 2 > out_len_should {
+            if out_len + len + 2 > out_len_should {
                 return Err(LzfError::BufferTooSmall);
             }
 
@@ -172,4 +172,15 @@ fn test_alice_wonderland() {
         },
         Err(err) => panic!("Decompression failed with error {:?}", err)
     }
+}
+#[test]
+fn easily_compressible() {
+    // RDB regression
+    let data = vec![1, 97, 97, 224, 187, 0, 1, 97, 97];
+    let real_length = 200;
+
+    let text = decompress(&data, real_length).unwrap();
+    assert_eq!(200, text.len());
+    assert_eq!(97, text[0]);
+    assert_eq!(97, text[199]);
 }
