@@ -32,3 +32,6 @@ env:
   global:
     - TRAVIS_CARGO_NIGHTLY_FEATURE=""
     - secure: "OJEgCFljFj9PZpcwtSXh+j0RFAuutN3fC9iou73YYlsNznW7P6QS2RRAfg0cP4Sig5W5aqy85jMJwAI+dY2z+2AF/zVTOUmRPbIbxvEDPm2SYXUV1w+oeLhGf/8GY4OJ3BU5VEBPz4X3UhAmu4Xp/NyHRp9l3T0MYEMCIfFmaUM="
+notifications:
+  email:
+    on_success: never
