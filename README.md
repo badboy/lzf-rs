@@ -1,5 +1,8 @@
 # LZF - a very small data compression library
 
+[![Build Status](https://travis-ci.org/badboy/lzf-rs.svg?branch=master)](https://travis-ci.org/badboy/lzf-rs)
+[![crates.io](http://meritbadge.herokuapp.com/lzf)](https://crates.io/crates/lzf)
+
 [LibLZF][] is a super small and fast compression library, originally written by Marc Lehmann.
 It's written in C and consists of only 4 files.
 And this is the rewrite in Rust.
