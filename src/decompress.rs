@@ -3,7 +3,7 @@ use std::ptr;
 use std::mem;
 
 /// Decompress the given data, if possible.
-/// The return value will be set to the error if compression fails.
+/// An error will be returned if decompression fails.
 ///
 /// The length of the output buffer can be specified.
 /// If the output buffer is not large enough to hold the decompressed data,
