@@ -16,6 +16,8 @@
 //!
 //! let decompressed = lzf::decompress(&compressed, data.len()).unwrap();
 //! ```
+#![cfg_attr(feature="clippy", feature(plugin))]
+#![cfg_attr(feature="clippy", plugin(clippy))]
 
 use std::fmt;
 
