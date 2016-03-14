@@ -83,7 +83,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 
         let off = current_offset.wrapping_sub(ref_offset).wrapping_sub(1);
         if off < MAX_OFF && current_offset + 4 < in_len && ref_offset > 0 &&
-           data[ref_offset+0] == data[current_offset+0] &&
+           data[ref_offset] == data[current_offset] &&
            data[ref_offset+1] == data[current_offset+1] &&
            data[ref_offset+2] == data[current_offset+2] {
 
