@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["compress","Compress the given data, if possible. The return value will be set to the error if compression fails."]]});
