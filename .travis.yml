@@ -22,8 +22,8 @@ script:
   - |
       travis-cargo build &&
       travis-cargo test &&
-      travis-cargo test --release &&
-      travis-cargo test --features=quickcheck &&
+      cargo test --release &&
+      cargo test --features=quickcheck &&
       travis-cargo bench &&
       travis-cargo --only stable doc
 after_success:
