@@ -11,6 +11,7 @@ readme = "README.md"
 
 [dependencies]
 clippy = {version = "*", optional = true}
+quickcheck = {version = "0.2", optional = true}
 
 [features]
 default = []

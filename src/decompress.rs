@@ -178,6 +178,7 @@ fn test_alice_wonderland() {
         Err(err) => panic!("Decompression failed with error {:?}", err),
     }
 }
+
 #[test]
 fn easily_compressible() {
     // RDB regression
