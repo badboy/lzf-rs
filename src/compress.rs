@@ -63,8 +63,8 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 
     let mut current_offset = 0;
 
-    if in_len == 0 {
-        return Err(LzfError::DataCorrupted);
+    if in_len < 2 {
+        return Err(LzfError::NoCompressionPossible);
     }
 
     let mut lit: i32 = 0;
@@ -256,6 +256,13 @@ fn test_alice_wonderland_both() {
 #[test]
 fn quickcheck_found_bug() {
     let inp = vec![0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 1, 1, 0, 1, 2, 0, 1, 3, 0, 1, 4, 0, 0, 5, 0, 0, 6, 0, 0, 7, 0, 0, 8, 0, 0, 9, 0, 0, 10, 0, 0, 11, 0, 1, 5, 0, 1, 6, 0, 1, 7, 0, 1, 8, 0, 1, 9, 0, 1, 10, 0, 0];
+
+    assert_eq!(LzfError::NoCompressionPossible, compress(&inp).unwrap_err());
+}
+
+#[test]
+fn quickcheck_found_bug2() {
+    let inp = vec![0];
 
     assert_eq!(LzfError::NoCompressionPossible, compress(&inp).unwrap_err());
 }
