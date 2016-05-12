@@ -154,6 +154,17 @@ mod quickcheck_test {
         quickcheck(compare_compress as fn(_) -> _);
     }
 
+    fn compare_decompress(data: Vec<u8>) -> TestResult {
+        let rust_decompr = lzf::decompress(&data, data.len()*2);
+        let native_decompr = sys::decompress(&data, data.len()*2);
+        TestResult::from_bool(rust_decompr == native_decompr)
+    }
+
+    #[test]
+    fn qc_native_decompress_matches_rust() {
+        quickcheck(compare_decompress as fn(_) -> _);
+    }
+
     fn native_compress_rust_decompress(data: Vec<u8>) -> TestResult {
         let compr = match sys::compress(&data) {
             Ok(compr) => compr,
