@@ -127,7 +127,7 @@ mod quickcheck_test {
     use quickcheck::{quickcheck, TestResult};
     use lzf::{self, LzfError};
 
-    fn rountrip_native(data: Vec<u8>) -> TestResult {
+    fn roundtrip_native(data: Vec<u8>) -> TestResult {
         let compr = match sys::compress(&data) {
             Ok(compr) => compr,
             Err(LzfError::NoCompressionPossible) => return TestResult::discard(),
@@ -140,7 +140,7 @@ mod quickcheck_test {
 
     #[test]
     fn qc_native_roundtrip() {
-        quickcheck(rountrip_native as fn(_) -> _);
+        quickcheck(roundtrip_native as fn(_) -> _);
     }
 
     fn compare_compress(data: Vec<u8>) -> TestResult {
