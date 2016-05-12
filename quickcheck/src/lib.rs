@@ -144,19 +144,8 @@ mod quickcheck_test {
     }
 
     fn compare_compress(data: Vec<u8>) -> TestResult {
-        let rust_compr = match lzf::compress(&data) {
-            Ok(compr) => compr,
-            Err(LzfError::NoCompressionPossible) => return TestResult::discard(),
-            Err(LzfError::DataCorrupted) => return TestResult::discard(),
-            e @ _ => panic!(e),
-        };
-
-        let native_compr = match sys::compress(&data) {
-            Ok(compr) => compr,
-            Err(LzfError::NoCompressionPossible) => return TestResult::discard(),
-            Err(LzfError::DataCorrupted) => return TestResult::discard(),
-            e @ _ => panic!(e),
-        };
+        let rust_compr = lzf::compress(&data);
+        let native_compr = sys::compress(&data);
         TestResult::from_bool(rust_compr == native_compr)
     }
 
