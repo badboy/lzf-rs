@@ -25,7 +25,6 @@ script:
       travis-cargo bench &&
       travis-cargo --only stable doc
   - cargo test --release
-  - cargo test --features=quickcheck
   - cd quickcheck && cargo test
 after_success:
   - travis-cargo --only stable doc-upload
