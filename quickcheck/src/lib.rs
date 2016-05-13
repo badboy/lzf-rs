@@ -33,6 +33,10 @@ pub mod sys {
     pub fn decompress(data: &[u8], out_len: usize) -> LzfResult<Vec<u8>> {
         let mut out : Vec<u8> = Vec::with_capacity(out_len);
 
+        if data.len() == 0 {
+            return Err(LzfError::DataCorrupted);
+        }
+
         let result = unsafe { lzf_decompress(data.as_ptr() as *const c_void, data.len() as c_uint,
         out.as_ptr() as *const c_void, out_len as c_uint) };
         match result {
@@ -118,6 +122,11 @@ mod test {
             Ok(_) => panic!("Decompression worked. That should not happen"),
             Err(err) => assert_eq!(LzfError::DataCorrupted, err)
         }
+    }
+
+    #[test]
+    fn test_empty() {
+        assert_eq!(LzfError::DataCorrupted, sys::decompress(&[], 10).unwrap_err());
     }
 }
 

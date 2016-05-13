@@ -22,12 +22,16 @@ use std::mem;
 pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     let mut current_offset = 0;
 
+    let in_len = data.len();
+    if in_len == 0 {
+        return Err(LzfError::DataCorrupted);
+    }
+
     // We have sanity checks to not exceed this capacity.
     let mut output = Vec::with_capacity(out_len_should);
     unsafe { output.set_len(out_len_should) };
     let mut out_len: usize = 0;
 
-    let in_len = data.len();
 
     while current_offset < in_len {
         let mut ctrl = data[current_offset] as usize;
@@ -59,6 +63,10 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
             let mut len = ctrl >> 5;
 
             let mut ref_offset = (((ctrl & 0x1f) << 8) + 1) as i32;
+
+            if current_offset >= in_len {
+                return Err(LzfError::DataCorrupted);
+            }
 
             if len == 7 {
                 len += data[current_offset] as usize;
@@ -189,4 +197,9 @@ fn easily_compressible() {
     assert_eq!(200, text.len());
     assert_eq!(97, text[0]);
     assert_eq!(97, text[199]);
+}
+
+#[test]
+fn test_empty() {
+    assert_eq!(LzfError::DataCorrupted, decompress(&[], 10).unwrap_err());
 }
