@@ -19,6 +19,9 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
+#[cfg(all(test, feature = "quickcheck"))]
+extern crate quickcheck;
+
 use std::fmt;
 
 mod compress;
@@ -102,4 +105,26 @@ fn test_compress_decompress_lorem_round() {
         }
         Err(err) => panic!("Decompression failed with error {:?}", err),
     };
+}
+
+#[cfg(all(test, feature = "quickcheck"))]
+mod quickcheck_test {
+    use super::*;
+    use quickcheck::{quickcheck, TestResult};
+
+    fn compress_decompress_round(data: Vec<u8>) -> TestResult {
+        let compr = match compress(&data) {
+            Ok(compr) => compr,
+            Err(LzfError::NoCompressionPossible) => return TestResult::discard(),
+            Err(LzfError::DataCorrupted) => return TestResult::discard(),
+            e @ _ => panic!(e),
+        };
+        let decompr = decompress(&compr, data.len()).unwrap();
+        TestResult::from_bool(data == decompr)
+    }
+
+    #[test]
+    fn qc_roundtrip() {
+        quickcheck(compress_decompress_round as fn(_) -> _);
+    }
 }

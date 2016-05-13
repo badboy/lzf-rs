@@ -2,3 +2,4 @@
 /Cargo.lock
 *.o
 *.a
+/quickcheck/target
