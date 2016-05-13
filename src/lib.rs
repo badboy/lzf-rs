@@ -19,7 +19,7 @@
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
 
-#[cfg(all(test, feature = "quickcheck"))]
+#[cfg(test)]
 extern crate quickcheck;
 
 use std::fmt;
@@ -107,7 +107,7 @@ fn test_compress_decompress_lorem_round() {
     };
 }
 
-#[cfg(all(test, feature = "quickcheck"))]
+#[cfg(test)]
 mod quickcheck_test {
     use super::*;
     use quickcheck::{quickcheck, TestResult};
