@@ -1,6 +1,4 @@
 use super::{LzfResult, LzfError};
-use std::ptr;
-use std::mem;
 
 /// Decompress the given data, if possible.
 /// An error will be returned if decompression fails.
@@ -49,16 +47,10 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
             }
 
             // We can simply memcpy everything from the input to the output
-            unsafe {
-                let (src, _): (*const u8, usize) = mem::transmute(&data[..]);
-                let src = src.offset(current_offset as isize);
-                let (dst, _): (*mut u8, usize) = mem::transmute(&output[..]);
-                let dst = dst.offset((out_len) as isize);
-                ptr::copy_nonoverlapping(src, dst, ctrl);
+            output[out_len..(out_len+ctrl)].copy_from_slice(&data[current_offset..(current_offset+ctrl)]);
 
-                current_offset += ctrl;
-                out_len += ctrl;
-            }
+            current_offset += ctrl;
+            out_len += ctrl;
         } else {
             let mut len = ctrl >> 5;
 

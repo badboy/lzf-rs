@@ -8,9 +8,9 @@
 //!
 //! # Basic Operation
 //!
-//! ```rust,no_run
+//! ```rust
 //! # use lzf;
-//! let data = "foobar";
+//! let data = "aaaaaaaaa";
 //!
 //! let compressed = lzf::compress(data.as_bytes()).unwrap();
 //!
@@ -18,6 +18,8 @@
 //! ```
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
+
+#![deny(missing_docs)]
 
 #[cfg(test)]
 extern crate quickcheck;
@@ -29,11 +31,16 @@ mod decompress;
 pub use compress::compress;
 pub use decompress::decompress;
 
+/// Errors that can occur during Compression or Decompression.
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum LzfError {
+    /// The provided buffer is too small to handle the uncompressed data
     BufferTooSmall,
+    /// The given compressed data is corrupted
     DataCorrupted,
+    /// The given data can't be compressed
     NoCompressionPossible,
+    /// An unknown error occured
     UnknownError(i32),
 }
 
@@ -57,6 +64,7 @@ impl fmt::Display for LzfError {
     }
 }
 
+/// A Result providing the underlying data or a compression/decompression error
 pub type LzfResult<T> = Result<T, LzfError>;
 
 #[test]
