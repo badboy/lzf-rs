@@ -39,6 +39,9 @@ fn not(i: i32) -> i32 {
 /// If that is not enough to hold the lzf-compressed data,
 /// an error will be returned.
 ///
+/// It will allocate a buffer as big as the input data, assuming that it can compress the data at
+/// all.
+///
 /// Example:
 ///
 /// ```rust

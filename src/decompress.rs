@@ -5,13 +5,15 @@ use std::mem;
 /// Decompress the given data, if possible.
 /// An error will be returned if decompression fails.
 ///
-/// The length of the output buffer can be specified.
+/// The given output buffer will be filled with the data and the length of the decompressed data
+/// will be returned.
+/// The slice should only be handled up to this length.
 /// If the output buffer is not large enough to hold the decompressed data,
-/// BufferTooSmall is returned.
+/// a `BufferTooSmall` error is returned.
 /// Otherwise the number of decompressed bytes
 /// (i.e. the original length of the data) is returned.
 ///
-/// If an error in the compressed data is detected, DataCorrupted is returned.
+/// If an error in the compressed data is detected, `DataCorrupted` is returned.
 ///
 /// Example:
 ///
