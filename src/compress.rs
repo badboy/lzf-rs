@@ -42,8 +42,8 @@ fn not(i: i32) -> i32 {
 /// Example:
 ///
 /// ```rust
-/// let data = "foobar";
-/// let compressed = lzf::compress(data.as_bytes());
+/// let data = "aaaaaaaaa";
+/// let compressed = lzf::compress(data.as_bytes()).unwrap();
 /// ```
 pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
     let in_len = data.len();

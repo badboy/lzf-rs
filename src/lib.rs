@@ -8,9 +8,9 @@
 //!
 //! # Basic Operation
 //!
-//! ```rust,no_run
+//! ```rust
 //! # use lzf;
-//! let data = "foobar";
+//! let data = "aaaaaaaaa";
 //!
 //! let compressed = lzf::compress(data.as_bytes()).unwrap();
 //!
