@@ -164,9 +164,15 @@ mod quickcheck_test {
     }
 
     fn compare_decompress(data: Vec<u8>) -> TestResult {
-        let rust_decompr = lzf::decompress(&data, data.len()*2);
-        let native_decompr = sys::decompress(&data, data.len()*2);
-        TestResult::from_bool(rust_decompr == native_decompr)
+        let mut rust_decompr = vec![0; data.len()*2];
+        let rust_res = lzf::decompress(&data, &mut rust_decompr);
+        let native_res = sys::decompress(&data, data.len()*2);
+
+        match (rust_res, native_res) {
+            (Err(e1), Err(e2)) => TestResult::from_bool(e1 == e2),
+            (Ok(len), Ok(buf)) => TestResult::from_bool(buf == &rust_decompr[..len]),
+            _ => TestResult::from_bool(false)
+        }
     }
 
     #[test]
@@ -182,8 +188,9 @@ mod quickcheck_test {
             e @ _ => panic!(e),
         };
 
-        let decompr = lzf::decompress(&compr, data.len()).unwrap();
-        TestResult::from_bool(data == decompr)
+        let mut decompr = vec![0; data.len()];
+        let len = lzf::decompress(&compr, &mut decompr).unwrap();
+        TestResult::from_bool(data == &decompr[..len])
     }
 
     fn rust_compress_native_decompress(data: Vec<u8>) -> TestResult {
