@@ -39,6 +39,9 @@ fn not(i: i32) -> i32 {
 /// If that is not enough to hold the lzf-compressed data,
 /// an error will be returned.
 ///
+/// It will allocate a buffer as big as the input data, assuming that it can compress the data at
+/// all.
+///
 /// Example:
 ///
 /// ```rust
@@ -210,31 +213,6 @@ fn test_compress_lorem() {
         }
         Err(err) => panic!("Compression failed with error {:?}", err),
     }
-}
-
-#[test]
-fn test_compress_decompress_lorem_round() {
-    use super::decompress;
-
-    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod \
-                 tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At \
-                 vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, \
-                 no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit \
-                 amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut \
-                 labore et dolore magna aliquyam erat, sed diam voluptua.";
-
-    let compressed = match compress(lorem.as_bytes()) {
-        Ok(c) => c,
-        Err(err) => panic!("Compression failed with error {:?}", err),
-    };
-
-    match decompress(&compressed, lorem.len()) {
-        Ok(decompressed) => {
-            assert_eq!(lorem.len(), decompressed.len());
-            assert_eq!(lorem.as_bytes(), &decompressed[..]);
-        }
-        Err(err) => panic!("Decompression failed with error {:?}", err),
-    };
 }
 
 #[test]
