@@ -14,7 +14,8 @@
 //!
 //! let compressed = lzf::compress(data.as_bytes()).unwrap();
 //!
-//! let decompressed = lzf::decompress(&compressed, data.len()).unwrap();
+//! let mut decompressed = vec![0; data.len()];
+//! let bytes = lzf::decompress(&compressed, &mut decompressed).unwrap();
 //! ```
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
@@ -106,10 +107,11 @@ fn test_compress_decompress_lorem_round() {
         Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
-    match decompress(&compressed, lorem.len()) {
-        Ok(decompressed) => {
-            assert_eq!(lorem.len(), decompressed.len());
-            assert_eq!(lorem.as_bytes(), &decompressed[..]);
+    let mut decompressed = vec![0; lorem.len()];
+    match decompress(&compressed, &mut decompressed) {
+        Ok(len) => {
+            assert_eq!(lorem.len(), len);
+            assert_eq!(lorem.as_bytes(), &decompressed[..len]);
         }
         Err(err) => panic!("Decompression failed with error {:?}", err),
     };
@@ -127,8 +129,9 @@ mod quickcheck_test {
             Err(LzfError::DataCorrupted) => return TestResult::discard(),
             e @ _ => panic!(e),
         };
-        let decompr = decompress(&compr, data.len()).unwrap();
-        TestResult::from_bool(data == decompr)
+        let mut decompr = vec![0; data.len()];
+        let len = decompress(&compr, &mut decompr).unwrap();
+        TestResult::from_bool(data == &decompr[..len])
     }
 
     #[test]

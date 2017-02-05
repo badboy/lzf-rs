@@ -3,21 +3,24 @@ use super::{LzfResult, LzfError};
 /// Decompress the given data, if possible.
 /// An error will be returned if decompression fails.
 ///
-/// The length of the output buffer can be specified.
+/// The given output buffer will be filled with the data and the length of the decompressed data
+/// will be returned.
+/// The slice should only be handled up to this length.
 /// If the output buffer is not large enough to hold the decompressed data,
-/// BufferTooSmall is returned.
+/// a `BufferTooSmall` error is returned.
 /// Otherwise the number of decompressed bytes
 /// (i.e. the original length of the data) is returned.
 ///
-/// If an error in the compressed data is detected, DataCorrupted is returned.
+/// If an error in the compressed data is detected, `DataCorrupted` is returned.
 ///
 /// Example:
 ///
 /// ```rust,no_run
 /// let data = "[your-compressed-data]";
-/// let decompressed = lzf::decompress(data.as_bytes(), 10);
+/// let mut decompressed = vec![0, 10];
+/// let bytes = lzf::decompress(data.as_bytes(), &mut decompressed).unwrap();
 /// ```
-pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
+pub fn decompress(data: &[u8], output: &mut [u8]) -> LzfResult<usize> {
     let mut current_offset = 0;
 
     let in_len = data.len();
@@ -26,8 +29,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     }
 
     // We have sanity checks to not exceed this capacity.
-    let mut output = Vec::with_capacity(out_len_should);
-    unsafe { output.set_len(out_len_should) };
+    let out_len_should = output.len();
     let mut out_len: usize = 0;
 
 
@@ -102,9 +104,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     }
 
     // Set the real length now, user might have passed a bigger buffer in the first place.
-    unsafe { output.set_len(out_len) };
-
-    Ok(output)
+    Ok(out_len)
 }
 
 #[test]
@@ -120,11 +120,13 @@ fn test_decompress_lorem() {
 
     let compressed = compress(lorem.as_bytes()).unwrap();
 
-    let decompressed = decompress(&compressed[..], lorem.len()).unwrap();
-    assert_eq!(lorem.as_bytes(), &decompressed[..]);
+    let mut decompressed = vec![0; lorem.len()];
+    let len = decompress(&compressed[..], &mut decompressed).unwrap();
+    assert_eq!(lorem.as_bytes(), &decompressed[..len]);
 
-    let decompressed = decompress(&compressed[..], 1000).unwrap();
-    assert_eq!(lorem.len(), decompressed.len());
+    let mut decompressed = vec![0; 1000];
+    let len = decompress(&compressed[..], &mut decompressed).unwrap();
+    assert_eq!(lorem.len(), len);
 }
 
 #[test]
@@ -143,7 +145,8 @@ fn test_decompress_fails_with_short_buffer() {
         Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
-    match decompress(&compressed, 10) {
+    let mut buffer = [0; 10];
+    match decompress(&compressed, &mut buffer) {
         Ok(_) => panic!("Decompression worked. That should not happen"),
         Err(err) => assert_eq!(LzfError::BufferTooSmall, err),
     }
@@ -153,7 +156,8 @@ fn test_decompress_fails_with_short_buffer() {
 fn test_decompress_fails_for_corrupted_data() {
     let lorem = "Lorem ipsum dolor sit amet";
 
-    match decompress(lorem.as_bytes(), lorem.len()) {
+    let mut buffer= vec![0; lorem.len()];
+    match decompress(lorem.as_bytes(), &mut buffer) {
         Ok(_) => panic!("Decompression worked. That should not happen"),
         Err(err) => assert_eq!(LzfError::DataCorrupted, err),
     }
@@ -170,10 +174,11 @@ fn test_alice_wonderland() {
         Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
-    match decompress(&compressed, alice.len()) {
-        Ok(decompressed) => {
-            assert_eq!(alice.len(), decompressed.len());
-            assert_eq!(alice.as_bytes(), &decompressed[..]);
+    let mut decompressed = vec![0; alice.len()];
+    match decompress(&compressed, &mut decompressed) {
+        Ok(len) => {
+            assert_eq!(alice.len(), len);
+            assert_eq!(alice.as_bytes(), &decompressed[..len]);
         }
         Err(err) => panic!("Decompression failed with error {:?}", err),
     }
@@ -183,15 +188,16 @@ fn test_alice_wonderland() {
 fn easily_compressible() {
     // RDB regression
     let data = vec![1, 97, 97, 224, 187, 0, 1, 97, 97];
-    let real_length = 200;
 
-    let text = decompress(&data, real_length).unwrap();
-    assert_eq!(200, text.len());
+    let mut text = [0; 200];
+    let len = decompress(&data, &mut text).unwrap();
+    assert_eq!(200, len);
     assert_eq!(97, text[0]);
     assert_eq!(97, text[199]);
 }
 
 #[test]
 fn test_empty() {
-    assert_eq!(LzfError::DataCorrupted, decompress(&[], 10).unwrap_err());
+    let mut buf = [0; 10];
+    assert_eq!(LzfError::DataCorrupted, decompress(&[], &mut buf).unwrap_err());
 }
