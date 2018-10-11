@@ -32,8 +32,6 @@ pub use decompress::decompress;
 /// Errors that can occur during Compression or Decompression.
 #[derive(PartialEq, Eq, Clone, Debug, Copy)]
 pub enum LzfError {
-    /// The provided buffer is too small to handle the uncompressed data
-    BufferTooSmall,
     /// The given compressed data is corrupted
     DataCorrupted,
     /// The given data can't be compressed
@@ -45,10 +43,6 @@ pub enum LzfError {
 impl fmt::Display for LzfError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            LzfError::BufferTooSmall => write!(
-                f,
-                "the given buffer is too small to handle the uncompressed data"
-            ),
             LzfError::DataCorrupted => write!(f, "the given data is corrupted"),
             LzfError::NoCompressionPossible => write!(f, "the input data cannot be compressed"),
             LzfError::UnknownError(err) => write!(f, "unknown error, code {}", err),
