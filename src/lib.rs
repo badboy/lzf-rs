@@ -17,6 +17,7 @@
 //! let decompressed = lzf::decompress(&compressed).unwrap();
 //! ```
 #![deny(missing_docs)]
+#![cfg_attr(feature = "cargo-clippy", allow(cast_lossless))]
 
 #[cfg(test)]
 extern crate quickcheck;
