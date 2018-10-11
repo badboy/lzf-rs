@@ -1,5 +1,6 @@
 use super::{LzfResult, LzfError};
 use std::cmp;
+use std::collections::HashMap;
 
 const HLOG    : usize = 16;
 const HSIZE   : u32 = 1 << HLOG;
@@ -52,7 +53,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 
     let mut out_len: i32 = 1; /* start run by default */
 
-    let mut htab = vec![0; 1 << HLOG];
+    let mut htab = HashMap::new();
 
     let mut current_offset = 0;
 
@@ -71,8 +72,8 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
         hval = next(hval, data, current_offset);
         let hslot_idx = idx(hval);
 
-        ref_offset = htab[hslot_idx];
-        htab[hslot_idx] = current_offset;
+        ref_offset = *htab.get(&hslot_idx).unwrap_or(&0);
+        htab.insert(hslot_idx, current_offset);
 
         let off = current_offset.wrapping_sub(ref_offset).wrapping_sub(1);
         if off < MAX_OFF && current_offset + 4 < in_len && ref_offset > 0 &&
@@ -126,11 +127,11 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
             hval = first(data, current_offset);
 
             hval = next(hval, data, current_offset);
-            htab[idx(hval)] = current_offset;
+            htab.insert(idx(hval), current_offset);
             current_offset += 1;
 
             hval = next(hval, data, current_offset);
-            htab[idx(hval)] = current_offset;
+            htab.insert(idx(hval), current_offset);
             current_offset += 1;
         } else {
             /* one more literal byte we must copy */

@@ -29,7 +29,6 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     let mut output = vec![0; out_len_should];
     let mut out_len: usize = 0;
 
-
     while current_offset < in_len {
         let mut ctrl = data[current_offset] as usize;
         current_offset += 1;
