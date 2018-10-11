@@ -95,12 +95,9 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
                 return Err(LzfError::NoCompressionPossible);
             }
 
-            loop {
+            len += 1;
+            while len < maxlen && data[ref_offset + len] == data[current_offset + len] {
                 len += 1;
-                while len < maxlen && data[ref_offset + len] == data[current_offset + len] {
-                    len += 1;
-                }
-                break;
             }
 
             len -= 2; /* len is now #octets - 1 */
