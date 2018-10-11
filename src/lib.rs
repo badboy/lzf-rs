@@ -44,19 +44,13 @@ pub enum LzfError {
 impl fmt::Display for LzfError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            LzfError::BufferTooSmall => {
-                write!(f,
-                       "the given buffer is too small to handle the uncompressed data")
-            }
-            LzfError::DataCorrupted => {
-                write!(f, "the given data is corrupted")
-            }
-            LzfError::NoCompressionPossible => {
-                write!(f, "the input data cannot be compressed")
-            }
-            LzfError::UnknownError(err) => {
-                write!(f, "unknown error, code {}", err)
-            }
+            LzfError::BufferTooSmall => write!(
+                f,
+                "the given buffer is too small to handle the uncompressed data"
+            ),
+            LzfError::DataCorrupted => write!(f, "the given data is corrupted"),
+            LzfError::NoCompressionPossible => write!(f, "the input data cannot be compressed"),
+            LzfError::UnknownError(err) => write!(f, "unknown error, code {}", err),
         }
     }
 }
@@ -82,9 +76,7 @@ fn test_compress_lorem() {
                  labore et dolore magna aliquyam erat, sed diam voluptua.";
 
     match compress(lorem.as_bytes()) {
-        Ok(compressed) => {
-            assert_eq!(272, compressed.len())
-        }
+        Ok(compressed) => assert_eq!(272, compressed.len()),
         Err(err) => panic!("Compression failed with error {:?}", err),
     }
 }

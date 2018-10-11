@@ -1,5 +1,5 @@
+use super::{LzfError, LzfResult};
 use std::iter::repeat;
-use super::{LzfResult, LzfError};
 
 /// Decompress the given data, if possible.
 /// An error will be returned if decompression fails.
@@ -32,7 +32,7 @@ pub fn decompress(data: &[u8]) -> LzfResult<Vec<u8>> {
             ctrl += 1;
 
             if out_len + ctrl > output.len() {
-                let ext = (out_len+ctrl) - output.len();
+                let ext = (out_len + ctrl) - output.len();
                 output.extend(repeat(0).take(ext));
             }
 
@@ -41,7 +41,8 @@ pub fn decompress(data: &[u8]) -> LzfResult<Vec<u8>> {
             }
 
             // We can simply memcpy everything from the input to the output
-            output[out_len..(out_len+ctrl)].copy_from_slice(&data[current_offset..(current_offset+ctrl)]);
+            output[out_len..(out_len + ctrl)]
+                .copy_from_slice(&data[current_offset..(current_offset + ctrl)]);
 
             current_offset += ctrl;
             out_len += ctrl;
@@ -67,7 +68,7 @@ pub fn decompress(data: &[u8]) -> LzfResult<Vec<u8>> {
             current_offset += 1;
 
             if out_len + len + 2 > output.len() {
-                let ext = (out_len+len+2) - output.len();
+                let ext = (out_len + len + 2) - output.len();
                 output.extend(repeat(0).take(ext));
             }
 
@@ -167,7 +168,6 @@ fn easily_compressible() {
 fn test_empty() {
     assert_eq!(LzfError::DataCorrupted, decompress(&[]).unwrap_err());
 }
-
 
 #[test]
 fn test_two() {
