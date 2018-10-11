@@ -42,8 +42,8 @@ pub mod sys {
         match result {
             0 => {
                 match Error::last_os_error().raw_os_error() {
-                    Some(7)  => Err(LzfError::BufferTooSmall),
-                    Some(22) => Err(LzfError::DataCorrupted),
+                    // 7 is BufferTooSmall, but the Rust code auto-expands. Let's ignore that error.
+                    Some(7) | Some(22) => Err(LzfError::DataCorrupted),
                     Some(e)  => Err(LzfError::UnknownError(e)),
                     None     => Err(LzfError::UnknownError(0)),
                 }
@@ -110,7 +110,7 @@ mod test {
 
         match sys::decompress(&compressed, 10) {
             Ok(_) => panic!("Decompression worked. That should not happen"),
-            Err(err) => assert_eq!(LzfError::BufferTooSmall, err)
+            Err(err) => assert_eq!(LzfError::DataCorrupted, err)
         }
     }
 
@@ -164,7 +164,7 @@ mod quickcheck_test {
     }
 
     fn compare_decompress(data: Vec<u8>) -> TestResult {
-        let rust_decompr = lzf::decompress(&data, data.len()*2);
+        let rust_decompr = lzf::decompress(&data);
         let native_decompr = sys::decompress(&data, data.len()*2);
         TestResult::from_bool(rust_decompr == native_decompr)
     }
@@ -182,7 +182,7 @@ mod quickcheck_test {
             e @ _ => panic!(e),
         };
 
-        let decompr = lzf::decompress(&compr, data.len()).unwrap();
+        let decompr = lzf::decompress(&compr).unwrap();
         TestResult::from_bool(data == decompr)
     }
 

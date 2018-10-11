@@ -14,7 +14,7 @@
 //!
 //! let compressed = lzf::compress(data.as_bytes()).unwrap();
 //!
-//! let decompressed = lzf::decompress(&compressed, data.len()).unwrap();
+//! let decompressed = lzf::decompress(&compressed).unwrap();
 //! ```
 #![cfg_attr(feature="clippy", feature(plugin))]
 #![cfg_attr(feature="clippy", plugin(clippy))]
@@ -106,7 +106,7 @@ fn test_compress_decompress_lorem_round() {
         Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
-    match decompress(&compressed, lorem.len()) {
+    match decompress(&compressed) {
         Ok(decompressed) => {
             assert_eq!(lorem.len(), decompressed.len());
             assert_eq!(lorem.as_bytes(), &decompressed[..]);
@@ -127,7 +127,7 @@ mod quickcheck_test {
             Err(LzfError::DataCorrupted) => return TestResult::discard(),
             e @ _ => panic!(e),
         };
-        let decompr = decompress(&compr, data.len()).unwrap();
+        let decompr = decompress(&compr).unwrap();
         TestResult::from_bool(data == decompr)
     }
 

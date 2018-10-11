@@ -222,7 +222,7 @@ fn test_compress_decompress_lorem_round() {
         Err(err) => panic!("Compression failed with error {:?}", err),
     };
 
-    match decompress(&compressed, lorem.len()) {
+    match decompress(&compressed) {
         Ok(decompressed) => {
             assert_eq!(lorem.len(), decompressed.len());
             assert_eq!(lorem.as_bytes(), &decompressed[..]);

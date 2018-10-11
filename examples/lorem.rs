@@ -10,6 +10,6 @@ fn main() {
     let compressed = compress(lorem.as_bytes()).unwrap();
     println!("l: {}", compressed.len());
 
-    let decompressed = decompress(&compressed[..], lorem.len()).unwrap();
+    let decompressed = decompress(&compressed[..]).unwrap();
     println!("l: {:?}", decompressed.len());
 }

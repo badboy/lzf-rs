@@ -33,7 +33,7 @@ fn main() {
 
   let compressed = lzf::compress(data.as_bytes()).unwrap();
 
-  let decompressed = lzf::decompress(&compressed, data.len()).unwrap();
+  let decompressed = lzf::decompress(&compressed).unwrap();
 }
 
 ```
