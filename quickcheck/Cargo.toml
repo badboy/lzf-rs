@@ -8,9 +8,9 @@ license = "BSD-3-Clause"
 build = "build.rs"
 
 [dependencies]
-quickcheck = "0.2"
+quickcheck = "0.7"
 libc = "0.2"
 lzf = {path = ".."}
 
 [build-dependencies]
-gcc = "0.3"
+cc = "1.0"
