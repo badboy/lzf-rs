@@ -21,6 +21,7 @@
 
 #[cfg(test)]
 extern crate quickcheck;
+extern crate hashbrown;
 
 use std::fmt;
 

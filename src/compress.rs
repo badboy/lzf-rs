@@ -1,6 +1,6 @@
 use super::{LzfError, LzfResult};
 use std::cmp;
-use std::collections::HashMap;
+use hashbrown::HashMap;
 
 const HLOG: usize = 16;
 const HSIZE: u32 = 1 << HLOG;

@@ -22,6 +22,9 @@ include = [
 [lib]
 bench = false
 
+[dependencies]
+hashbrown = "0.1.7"
+
 [dev-dependencies]
 quickcheck = "0.2"
 criterion = "0.2"
