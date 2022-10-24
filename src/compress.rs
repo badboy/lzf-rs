@@ -1,26 +1,25 @@
-use super::{LzfResult, LzfError};
+use super::{LzfError, LzfResult};
 use std::{cmp, mem};
 
-const HLOG    : usize = 16;
-const HSIZE   : u32 = 1 << HLOG;
-const MAX_OFF : usize = 1 << 13;
-const MAX_REF : usize = (1 << 8) + (1 << 3);
-const MAX_LIT : i32 = 1 << 5;
+const HLOG: usize = 16;
+const HSIZE: u32 = 1 << HLOG;
+const MAX_OFF: usize = 1 << 13;
+const MAX_REF: usize = (1 << 8) + (1 << 3);
+const MAX_LIT: i32 = 1 << 5;
 
 fn first(p: &[u8], off: usize) -> u32 {
-    ((p[off] as u32) << 8) | p[off+1] as u32
+    ((p[off] as u32) << 8) | p[off + 1] as u32
 }
 
 fn next(v: u32, p: &[u8], off: usize) -> u32 {
-    (v << 8) | p[off+2] as u32
+    (v << 8) | p[off + 2] as u32
 }
 
 fn idx(h: u32) -> usize {
     let h = h as u64;
     (
         // 8 = 3*8-HLOG, but HLOG is constant at 16
-        (h.wrapping_shr(8).wrapping_sub(h*5))
-        & (HSIZE-1) as u64
+        (h.wrapping_shr(8).wrapping_sub(h * 5)) & (HSIZE - 1) as u64
     ) as usize
 }
 
@@ -82,12 +81,14 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
         htab[hslot_idx] = current_offset;
 
         let off = current_offset.wrapping_sub(ref_offset).wrapping_sub(1);
-        if off < MAX_OFF && current_offset + 4 < in_len && ref_offset > 0 &&
-           ref_offset < in_len - 2 &&
-           data[ref_offset] == data[current_offset] &&
-           data[ref_offset+1] == data[current_offset+1] &&
-           data[ref_offset+2] == data[current_offset+2] {
-
+        if off < MAX_OFF
+            && current_offset + 4 < in_len
+            && ref_offset > 0
+            && ref_offset < in_len - 2
+            && data[ref_offset] == data[current_offset]
+            && data[ref_offset + 1] == data[current_offset + 1]
+            && data[ref_offset + 2] == data[current_offset + 2]
+        {
             let mut len = 2;
             let maxlen = cmp::min(in_len - current_offset - len, MAX_REF);
 
@@ -101,7 +102,7 @@ pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
 
             loop {
                 len += 1;
-                while len < maxlen && data[ref_offset+len] == data[current_offset+len] {
+                while len < maxlen && data[ref_offset + len] == data[current_offset + len] {
                     len += 1;
                 }
                 break;
@@ -256,7 +257,11 @@ fn test_alice_wonderland_both() {
 
 #[test]
 fn quickcheck_found_bug() {
-    let inp = vec![0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 1, 1, 0, 1, 2, 0, 1, 3, 0, 1, 4, 0, 0, 5, 0, 0, 6, 0, 0, 7, 0, 0, 8, 0, 0, 9, 0, 0, 10, 0, 0, 11, 0, 1, 5, 0, 1, 6, 0, 1, 7, 0, 1, 8, 0, 1, 9, 0, 1, 10, 0, 0];
+    let inp = vec![
+        0, 0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 1, 1, 0, 1, 2, 0, 1, 3, 0, 1, 4, 0, 0, 5, 0,
+        0, 6, 0, 0, 7, 0, 0, 8, 0, 0, 9, 0, 0, 10, 0, 0, 11, 0, 1, 5, 0, 1, 6, 0, 1, 7, 0, 1, 8, 0,
+        1, 9, 0, 1, 10, 0, 0,
+    ];
 
     assert_eq!(LzfError::NoCompressionPossible, compress(&inp).unwrap_err());
 }

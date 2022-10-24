@@ -42,8 +42,10 @@ impl fmt::Display for LzfError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             LzfError::BufferTooSmall => {
-                write!(f,
-                       "the given buffer is too small to handle the uncompressed data")
+                write!(
+                    f,
+                    "the given buffer is too small to handle the uncompressed data"
+                )
             }
             LzfError::DataCorrupted => {
                 write!(f, "the given data is corrupted")

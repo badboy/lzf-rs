@@ -1,4 +1,4 @@
-use super::{LzfResult, LzfError};
+use super::{LzfError, LzfResult};
 
 /// Decompress the given data, if possible.
 /// An error will be returned if decompression fails.
@@ -30,7 +30,6 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     unsafe { output.set_len(out_len_should) };
     let mut out_len: usize = 0;
 
-
     while current_offset < in_len {
         let mut ctrl = data[current_offset] as usize;
         current_offset += 1;
@@ -47,7 +46,8 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
             }
 
             // We can simply memcpy everything from the input to the output
-            output[out_len..(out_len+ctrl)].copy_from_slice(&data[current_offset..(current_offset+ctrl)]);
+            output[out_len..(out_len + ctrl)]
+                .copy_from_slice(&data[current_offset..(current_offset + ctrl)]);
 
             current_offset += ctrl;
             out_len += ctrl;
