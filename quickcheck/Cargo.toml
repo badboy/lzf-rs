@@ -4,13 +4,14 @@ version = "0.0.1"
 authors = ["Jan-Erik Rediger <badboy@fnordig.de>"]
 description = "Compare lzf-rs to native C library"
 license = "BSD-3-Clause"
+edition = "2021"
 
 build = "build.rs"
 
 [dependencies]
-quickcheck = "0.2"
+quickcheck = "1.0"
 libc = "0.2"
 lzf = {path = ".."}
 
 [build-dependencies]
-gcc = "0.3"
+cc = "1.0"

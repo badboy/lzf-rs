@@ -1,7 +1,3 @@
-extern crate quickcheck;
-extern crate libc;
-extern crate lzf;
-
 pub mod sys {
     use libc::{c_uint,c_void};
     use lzf::{LzfError, LzfResult};
@@ -141,7 +137,7 @@ mod quickcheck_test {
             Ok(compr) => compr,
             Err(LzfError::NoCompressionPossible) => return TestResult::discard(),
             Err(LzfError::DataCorrupted) => return TestResult::discard(),
-            e @ _ => panic!(e),
+            e @ _ => panic!("{:?}", e),
         };
         let decompr = sys::decompress(&compr, data.len()).unwrap();
         TestResult::from_bool(data == decompr)
@@ -179,7 +175,7 @@ mod quickcheck_test {
             Ok(compr) => compr,
             Err(LzfError::NoCompressionPossible) => return TestResult::discard(),
             Err(LzfError::DataCorrupted) => return TestResult::discard(),
-            e @ _ => panic!(e),
+            e @ _ => panic!("{:?}", e),
         };
 
         let decompr = lzf::decompress(&compr, data.len()).unwrap();
@@ -191,7 +187,7 @@ mod quickcheck_test {
             Ok(compr) => compr,
             Err(LzfError::NoCompressionPossible) => return TestResult::discard(),
             Err(LzfError::DataCorrupted) => return TestResult::discard(),
-            e @ _ => panic!(e),
+            e @ _ => panic!("{:?}", e),
         };
 
         let decompr = sys::decompress(&compr, data.len()).unwrap();

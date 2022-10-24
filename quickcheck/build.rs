@@ -1,5 +1,6 @@
-extern crate gcc;
-
 fn main() {
-    gcc::compile_library("liblzf.a", &["lzf/lzf_c.c", "lzf/lzf_d.c"]);
+    cc::Build::new()
+        .file("lzf/lzf_c.c")
+        .file("lzf/lzf_d.c")
+        .compile("lzf");
 }
