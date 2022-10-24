@@ -1,6 +1,7 @@
 #![feature(test)]
-extern crate lzf;
+
 extern crate test;
+
 use test::Bencher;
 
 #[bench]
