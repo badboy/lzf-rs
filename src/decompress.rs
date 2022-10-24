@@ -26,8 +26,7 @@ pub fn decompress(data: &[u8], out_len_should: usize) -> LzfResult<Vec<u8>> {
     }
 
     // We have sanity checks to not exceed this capacity.
-    let mut output = Vec::with_capacity(out_len_should);
-    unsafe { output.set_len(out_len_should) };
+    let mut output = vec![0; out_len_should];
     let mut out_len: usize = 0;
 
     while current_offset < in_len {

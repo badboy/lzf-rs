@@ -1,5 +1,5 @@
 use super::{LzfError, LzfResult};
-use std::{cmp, mem};
+use std::cmp;
 
 const HLOG: usize = 16;
 const HSIZE: u32 = 1 << HLOG;
@@ -47,18 +47,11 @@ fn not(i: i32) -> i32 {
 pub fn compress(data: &[u8]) -> LzfResult<Vec<u8>> {
     let in_len = data.len();
     let out_buf_len = in_len;
-    let mut out = Vec::with_capacity(out_buf_len);
-    unsafe { out.set_len(out_buf_len) };
+    let mut out = vec![0; out_buf_len];
 
     let mut out_len: i32 = 1; /* start run by default */
 
-    /* This goes against all of Rust's statically verifiable guarantees,
-     * but for the below use-case accessing uninitialized memory is ok,
-     * as we have other checks to make sure the read memory is not used.
-     *
-     * The otherwise happening memset slows down the code by a factor of 20-30
-     */
-    let mut htab: [usize; 1 << HLOG] = unsafe { mem::uninitialized() };
+    let mut htab = vec![0; 1 << HLOG];
 
     let mut current_offset = 0;
 
