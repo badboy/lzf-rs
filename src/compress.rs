@@ -4,8 +4,8 @@ use std::{cmp, mem};
 const HLOG    : usize = 16;
 const HSIZE   : u32 = 1 << HLOG;
 const MAX_OFF : usize = 1 << 13;
-const MAX_REF : usize = ((1 << 8) + (1 << 3));
-const MAX_LIT : i32 = (1 << 5);
+const MAX_REF : usize = (1 << 8) + (1 << 3);
+const MAX_LIT : i32 = 1 << 5;
 
 fn first(p: &[u8], off: usize) -> u32 {
     ((p[off] as u32) << 8) | p[off+1] as u32
