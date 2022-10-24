@@ -16,13 +16,7 @@
 //!
 //! let decompressed = lzf::decompress(&compressed, data.len()).unwrap();
 //! ```
-#![cfg_attr(feature="clippy", feature(plugin))]
-#![cfg_attr(feature="clippy", plugin(clippy))]
-
 #![deny(missing_docs)]
-
-#[cfg(test)]
-extern crate quickcheck;
 
 use std::fmt;
 
@@ -125,7 +119,7 @@ mod quickcheck_test {
             Ok(compr) => compr,
             Err(LzfError::NoCompressionPossible) => return TestResult::discard(),
             Err(LzfError::DataCorrupted) => return TestResult::discard(),
-            e @ _ => panic!(e),
+            e @ _ => panic!("{:?}", e),
         };
         let decompr = decompress(&compr, data.len()).unwrap();
         TestResult::from_bool(data == decompr)
