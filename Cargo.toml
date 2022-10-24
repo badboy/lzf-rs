@@ -20,11 +20,16 @@ include = [
   "examples/**/*"
 ]
 
-[dependencies]
-clippy = {version = "*", optional = true}
+[lib]
+bench = false
 
 [dev-dependencies]
 quickcheck = "1.0"
+criterion = "0.4"
+
+[[bench]]
+name = "bench_basic"
+harness = false
 
 [features]
 default = []

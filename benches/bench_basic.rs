@@ -1,22 +1,45 @@
-#![feature(test)]
+use criterion::{criterion_group, criterion_main, Criterion};
 
-extern crate test;
+fn bench_lzf_compression(c: &mut Criterion) {
+    static KB: usize = 1024;
 
-use test::Bencher;
+    let data = [KB, 2 * KB, 4 * KB, 6 * KB];
 
-#[bench]
-fn bench_basic_lzf_compression_decompression(b: &mut Bencher) {
-    b.iter(|| {
-        let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
+    let mut group = c.benchmark_group("lzf 0");
+    for size in data {
+        let name = format!("size={}", size);
+        group.bench_function(name, |b| {
+            let buffer = std::iter::repeat(0u8).take(size).collect::<Vec<_>>();
+            b.iter(|| lzf::compress(&buffer).unwrap());
+        });
+    }
+    group.finish();
 
-        let compressed = lzf::compress(lorem.as_bytes()).unwrap();
-        let _ = lzf::decompress(&compressed, lorem.len());
-    })
-}
+    let mut group = c.benchmark_group("lzf 17");
+    for size in data {
+        let name = format!("size={}", size);
+        group.bench_function(name, |b| {
+            let buffer = std::iter::repeat(17u8).take(size).collect::<Vec<_>>();
+            b.iter(|| lzf::compress(&buffer).unwrap());
+        });
+    }
+    group.finish();
 
-#[bench]
-fn bench_basic_lzf_decompression(b: &mut Bencher) {
-    b.iter(|| {
+    let mut group = c.benchmark_group("lzf lorem");
+    for size in data {
+        let name = format!("size={}", size);
+        group.bench_function(name, |b| {
+            let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
+            let mut buffer = String::new();
+            while buffer.len() < size {
+                buffer.push_str(lorem);
+            }
+            b.iter(|| lzf::compress(&buffer.as_bytes()[0..size]).unwrap());
+        });
+    }
+    group.finish();
+
+    c.bench_function("lzf decompression", |b| {
         let lorem = [
             31, 76, 111, 114, 101, 109, 32, 105, 112, 115, 117, 109, 32, 100, 111, 108, 111, 114,
             32, 115, 105, 116, 32, 97, 109, 101, 116, 44, 32, 99, 111, 110, 115, 4, 101, 116, 101,
@@ -34,15 +57,9 @@ fn bench_basic_lzf_decompression(b: &mut Bencher) {
             117, 32, 63, 3, 115, 116, 32, 76, 32, 73, 225, 13, 11, 0, 46, 224, 18, 27, 225, 118,
             39, 1, 97, 46,
         ];
-
-        let _ = lzf::decompress(&lorem, 451);
-    })
+        b.iter(|| lzf::decompress(&lorem, 451).unwrap());
+    });
 }
 
-#[bench]
-fn bench_basic_lzf_compression(b: &mut Bencher) {
-    let lorem = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.";
-    b.iter(|| {
-        let _ = lzf::compress(lorem.as_bytes()).unwrap();
-    })
-}
+criterion_group!(benches, bench_lzf_compression);
+criterion_main!(benches);
