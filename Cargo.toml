@@ -1,6 +1,6 @@
 [package]
 name = "lzf"
-version = "0.3.2"
+version = "1.0.0"
 authors = ["Jan-Erik Rediger <badboy@fnordig.de>"]
 keywords = ["compression"]
 description = "DEPRECATED! An implementation of LZF, a very small data compression algorithm"
