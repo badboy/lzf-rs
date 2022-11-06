@@ -1,5 +1,11 @@
 # LZF - a very small data compression library
 
+---
+
+**DEPRECATED**
+
+---
+
 [LibLZF][] is a super small and fast compression library, originally written by Marc Lehmann.
 It's written in C and consists of only 4 files.
 And this is the rewrite in Rust.
@@ -9,7 +15,7 @@ The whole Rust code is under 50 lines (yes, there is more test code than actual 
 And it is super easy to use, though I'm not happy with the current interface.~~
 
 I sat down and tried to understand the original C code and then rewrote it in (mostly) safe Rust code.
-And the best thing: it's still super fast (on some basic benchmarks it's nearly as fast as the original code).
+~~And the best thing: it's still super fast (on some basic benchmarks it's nearly as fast as the original code).~~
 It now consists of roughly 200 lines of code, which is probably around the same as the original implementation.
 
 

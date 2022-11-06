@@ -1,3 +1,18 @@
+### 1.0.0 (2022-11-06)
+
+This is the same as v0.3.2
+
+This crate is now DEPRECATED.
+The API now is suboptimal and not as fast as I hoped.
+
+### 0.3.2 (2022-11-06)
+
+DO NOT USE <= v0.3.1.
+It's broken, wrong and unsound.
+
+* Remove wrong usage of `mem::unitialized` and replace it with a heap-allocated `Vec`.
+  This might be slower than the initial version, but at least not broken.
+
 ### 0.3.1 (2015-09-27)
 
 * Correct output length calculation
